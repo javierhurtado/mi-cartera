@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi Cartera</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cartera">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111418">
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e3e6ea;--ac:#2563eb;--up:#0f9d58;--dn:#d93025;--fc:#f59e0b}
+@media (prefers-color-scheme:dark){:root{--bg:#111418;--card:#1a1f26;--tx:#e8eaed;--mu:#9aa3ae;--bd:#2b323b;--ac:#6ea0ff;--up:#4cc38a;--dn:#ff7b72;--fc:#fbbf24}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+.ov{padding-top:calc(16px + env(safe-area-inset-top))}
+input.q{font-size:16px}
+h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+button{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 13px;cursor:pointer;font:inherit}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
+@media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.g2>.card{margin:0;display:flex;flex-direction:column;min-width:0}.cb{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}.cb>*{width:100%}
+.k{font-size:12px;color:var(--mu)}.v{font-size:19px;font-weight:600}
+.up{color:var(--up)}.dn{color:var(--dn)}.fc{color:var(--fc)}
+.sc{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--mu);font-weight:600}
+.note{font-size:12px;color:var(--mu);margin-top:8px}
+.err{color:var(--dn);white-space:pre-wrap}
+.hide{display:none}
+th.srt{cursor:pointer;user-select:none}th.srt:hover{color:var(--tx)}
+select{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font:inherit}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sep{width:1px;height:22px;background:var(--bd);margin:0 4px}
+tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(127,127,127,.08)}
+tr.sold td{opacity:.6}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);overflow-y:auto;padding:16px;z-index:9}
+.dc{max-width:960px;margin:0 auto}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lg{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:9px;font-weight:700;vertical-align:middle;margin-right:7px;border:1px solid var(--bd);flex:none;overflow:hidden}
+.fg{display:flex;gap:6px;align-items:center;overflow-x:auto;white-space:nowrap;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
+.fg .k{min-width:54px}
+.fg button{padding:5px 12px;border-radius:999px;font-size:13px;flex:none}
+.big{font-size:26px;font-weight:700}
+.tile{border:1px solid var(--bd);border-radius:10px;padding:10px}
+.tile .sub{font-size:12px;color:var(--mu)}
+.bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}.bar .t{width:150px}.bar .tr{flex:1;background:var(--bd);border-radius:4px;height:12px;position:relative}.bar .tr i{position:absolute;top:0;height:12px;border-radius:4px}
+#tp{min-width:720px}
+.ib{padding:7px 10px;display:inline-flex;align-items:center;gap:6px}.ib svg{display:block}
+.kp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kp4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
+.kc{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;min-width:0}
+.kc .l{font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kc .n{font-size:18px;font-weight:700;white-space:nowrap}.kc .s{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kp4 .kc{padding:6px 8px}.kp4 .n{font-size:14px}
+#kp.card{padding:10px}
+.pk{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);cursor:pointer}.pk input{width:18px;height:18px}.pk .lg{margin:0}
+input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font:inherit;flex:1;min-width:120px}
+.tl{padding:1px}
+.xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
+.card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
+.cw{position:relative}.cw svg{touch-action:pan-y;display:block}
+.tt{position:absolute;top:2px;z-index:3;pointer-events:none;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;line-height:1.5}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.pc2{border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;background:var(--card)}
+.pc2 .lg{margin:0}.pc2 .bw{height:6px;border-radius:3px;background:var(--bd);margin:8px 0 6px}.pc2 .bw i{display:block;height:6px;border-radius:3px;background:var(--ac)}
+.tl{position:absolute;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;cursor:pointer;border:1px solid var(--bd);text-align:center;line-height:1.15}
+.tl .lg{margin:0}.tg{position:absolute;border:1px solid var(--bd);border-radius:10px}.tgl{position:absolute;left:6px;top:1px;font-size:11px;color:var(--mu);font-weight:600;white-space:nowrap}
+.lg.xl{width:36px;height:36px;font-size:12px}
+.rowp{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px;cursor:pointer}.rowp .nmx{width:112px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rowp .trk{flex:1;background:var(--bd);border-radius:4px;height:14px}.rowp .trk i{display:block;height:14px;border-radius:4px}
+#tp td:first-child,#tp th:first-child{position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--bd)}
+.sc{-webkit-overflow-scrolling:touch}
+@media(max-width:760px){main{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.nm{display:none}.kc .n{font-size:16px}.kp4 .n{font-size:13px}.top h1{font-size:18px}th,td{padding:7px 6px}main{padding:12px}.v{font-size:17px}.big{font-size:22px}.bar .t{width:105px}}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.mt{border:1px solid var(--bd);border-radius:10px;padding:10px;background:var(--card)}
+.mt.cur{border-color:var(--ac)}
+.mt .h{display:flex;justify-content:space-between;font-weight:600;margin-bottom:6px}
+.it{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 0}
+.it.f{opacity:.75}.it.f .a{color:var(--fc)}
+svg text{font-family:inherit}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+</style></head><body><main>
+<div class="top"><h1>📈 Mi Cartera</h1><div class="row"><span class="note" id="meta"></span> <button id="rf">↻ Actualizar</button><button id="eye" class="ib" title="Ocultar importes"></button><button id="cfg" class="ib" title="Ajustes">⚙</button></div></div>
+<div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>
+<div id="msg" class="card">Cargando datos de tu hoja…</div>
+<div id="app" class="hide">
+<nav id="nav"><button data-t="pos" class="on">Cartera</button><button data-t="pt">Composición</button><button data-t="rent">Rentabilidad</button><button data-t="dv">Dividendos</button><button data-t="gr">Gráficos</button><button data-t="cu">Cuadre</button></nav>
+
+<section id="pos"><div class="card" id="kp"></div><div class="card" id="pf"></div><div class="card sc"><table id="tp"></table></div></section>
+
+<section id="pt" class="hide"><div class="card" id="ptc"></div></section>
+
+<section id="rent" class="hide">
+ <div class="card"><div class="chips" id="per"></div><div class="grid" id="kr"></div></div>
+ <div class="card"><h2>TWR acumulado</h2><div id="ch1" class="sc"></div></div>
+ <div class="card"><h2>Valor de la cartera vs. aportación neta</h2><div id="ch2" class="sc"></div></div>
+ <div class="card" id="hs"></div>
+ <div class="card note" style="font-size:13px"><b>Cómo se calcula</b><br>
+ <b>MWR</b> (TIR/XIRR anualizada, en €): compras = salidas; ventas y dividendos netos (<span id="dn"></span>) = entradas; valor final = valor de mercado de Cartera. En un periodo parcial, el valor inicial cuenta como una salida el primer día.<br>
+ <b>TWR</b>: se valora la cartera cada semana y en cada fecha de operación con precios históricos de GOOGLEFINANCE (convertidos a € con el cambio de esa semana). Si un ticker no tiene histórico, se usa el último precio operado. En los días de operación se valora con el precio real de la operación. Los dividendos suman al rendimiento. No incluye primas de opciones.</div>
+</section>
+
+<section id="dv" class="hide">
+ <div class="chips" id="yrs"></div>
+ <div class="card"><div class="grid" id="kd"></div></div>
+ <div class="card"><h2>Resumen por año</h2><div class="sc"><table id="dsum" style="min-width:440px"></table></div><div class="note">Media por mes y por día sobre el tiempo transcurrido del año (el año en curso solo cuenta hasta hoy). Δ compara cada año completo con el anterior.</div></div>
+ <div class="card"><h2>Calendario de dividendos</h2><div class="months" id="cal"></div>
+ <div class="leg"><span><i style="background:var(--up)"></i>Cobrado</span><span><i style="background:var(--fc)"></i>Previsto (según «Emp.»)</span></div></div>
+ <div class="card"><h2>Próximos pagos</h2><div id="up"></div></div>
+</section>
+
+<section id="gr" class="hide"><div class="chips" id="yrs2"></div><div class="chips" id="per2"></div><div class="g2" id="grs"></div></section>
+<section id="cu" class="hide"><div class="card" id="cuc"></div></section>
+</div>
+<div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
+<div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
+<div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
+<script>
+const $=s=>document.querySelector(s);
+/* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
+const CFG={url:'',key:''};
+try{
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.get('u')&&h.get('k')){localStorage.setItem('mc_url',h.get('u'));localStorage.setItem('mc_key',h.get('k'))}
+  CFG.url=localStorage.getItem('mc_url')||h.get('u')||'';CFG.key=localStorage.getItem('mc_key')||h.get('k')||'';
+}catch(e){}
+const idb={
+  _o:()=>new Promise((res,rej)=>{try{const r=indexedDB.open('mc',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}}),
+  get:k=>idb._o().then(db=>new Promise(res=>{const q=db.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})).catch(()=>null),
+  set:(k,v)=>idb._o().then(db=>new Promise(res=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>res(true);t.onerror=()=>res(false)})).catch(()=>false),
+  clear:()=>idb._o().then(db=>new Promise(res=>{const t=db.transaction('kv','readwrite');t.objectStore('kv').clear();t.oncomplete=()=>res(true)})).catch(()=>false)
+};
+async function apiCall(name,args){
+  const q=new URLSearchParams({a:name,k:CFG.key});if(args&&args[0]!=null)q.set('s',args[0]);
+  const r=await fetch(CFG.url+(CFG.url.includes('?')?'&':'?')+q.toString());
+  const t=await r.text();
+  if(t.trim()[0]!=='{')throw new Error('Respuesta no válida del servidor (¿URL correcta y acceso «Cualquier persona»?)');
+  return t;
+}
+function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
+  if(name==='withSuccessHandler')return f=>mkRun(f,ko);
+  if(name==='withFailureHandler')return g=>mkRun(ok,g);
+  return async(...args)=>{
+    let served=false;
+    try{
+      if(name==='loadAll'){const c=await idb.get('data');if(c){served=true;ok&&ok(c)}}
+      if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
+      const t=await apiCall(name,args);
+      let o=null;try{o=JSON.parse(t)}catch(e){}
+      if(o&&o.error&&name!=='loadLogos')throw new Error(o.error);
+      if(name==='loadAll')idb.set('data',t);
+      if(name==='loadLogos'&&o&&!o.error)idb.set('lg'+(args[0]||0),{t:Date.now(),v:t});
+      ok&&ok(name==='buildHistory'?o:t);
+    }catch(e){
+      if(name==='loadAll'&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
+      if(!served)ko&&ko(e);else {const m=document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
+    }
+  }}})}
+window.google={script:{run:mkRun(null,null)}};
+function showCfg(msg){
+  $('#msg').classList.add('hide');$('#app').classList.add('hide');$('#cfgscr').classList.remove('hide');
+  $('#cu').value=CFG.url;$('#ck').value=CFG.key;$('#ce').textContent=msg||'';
+}
+
+let D=null,SER=[],SERR=[],HOLD={},FL=[],EMP={};
+const S={per:'all',src:null,year:new Date().getFullYear(),sort:{k:'val',d:-1},fb:'',fp:'',fc:'',pv:'mos',pg:'',pc:'n'};
+let HIDE=false,HID=new Set();
+try{HIDE=localStorage.getItem('hide')==='1';HID=new Set(JSON.parse(localStorage.getItem('hid')||'[]'))}catch(e){}
+const sv=()=>{try{localStorage.setItem('hide',HIDE?'1':'0');localStorage.setItem('hid',JSON.stringify([...HID]))}catch(e){}};
+const vis=t=>!HID.has(t);
+const ser=()=>(S.src==='rend'&&SERR.length)?SERR:SER;
+const MES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const PAL=['#2563eb','#0f9d58','#f59e0b','#d93025','#8b5cf6','#06b6d4','#ec4899','#84cc16','#64748b','#f97316'];
+const fm=(n,d=2)=>(n!=null&&isFinite(n))?n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const fh=(n,d)=>HIDE?'•••':fm(n,d);
+const pc=n=>(n!=null&&isFinite(n))?(n*100).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2,signDisplay:'exceptZero'})+' %':'–';
+const cl=n=>n>0?'up':n<0?'dn':'';
+const days=(a,b)=>(new Date(a)-new Date(b))/864e5*-1;
+const kpi=(k,v)=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`;
+
+/* ---------- logos ---------- */
+const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:':'.MI','SWX:':'.SW','HEL:':'.HE','STO:':'.ST','CPH:':'.CO','EBR:':'.BR','ELI:':'.LS','VIE:':'.VI','TSE:':'.TO','TYO:':'.T'};
+/* Logos: solo los de tu carpeta de Drive (TICKER.png). Se pintan como fondo CSS para no repetir el dato en cada fila */
+let LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
+const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
+const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
+function updMeta(){$('#meta').textContent=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(HID.size?' · '+HID.size+' ocultas':'')}
+function addLogos(map){
+  let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
+  let st=document.getElementById('lgcss');if(!st){st=document.createElement('style');st.id='lgcss';document.head.appendChild(st)}
+  st.appendChild(document.createTextNode(css));
+}
+/* Los logos se piden a Drive por lotes después de pintar la app, para que nada espere a la carpeta */
+function fetchLogos(start){
+  google.script.run.withSuccessHandler(r=>{
+    try{r=JSON.parse(r)}catch(e){LGERR='respuesta no válida';updMeta();return}
+    if(r.error){LGERR=r.error;updMeta();return}
+    addLogos(r.logos||{});LGN+=Object.keys(r.logos||{}).length;LGTOT=r.total;updMeta();
+    if(r.next!=null)fetchLogos(r.next)})
+  .withFailureHandler(e=>{LGERR=(e&&e.message)||String(e);updMeta()}).loadLogos(start||0);
+}
+
+/* ---------- carga ---------- */
+function load(){
+  $('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…';
+  const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
+  const fail=m=>{clearTimeout(slow);$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
+  google.script.run.withSuccessHandler(r=>{
+    clearTimeout(slow);
+    try{
+      if(!r)throw new Error('El servidor no devolvió datos.');
+      D=typeof r==='string'?JSON.parse(r):r;EMP={};D.emp.forEach(e=>EMP[e.t]=e);
+      $('#msg').classList.add('hide');$('#app').classList.remove('hide');
+      META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();$('#dn').textContent=D.divNeto;
+      buildSeries();renderAll();
+      if(!LGSTART){LGSTART=true;fetchLogos(0)}
+    }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
+  .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll();
+}
+function buildHist(){
+  $('#hs').innerHTML='<b>Construyendo histórico de precios…</b><div class="note">Puede tardar de 1 a 2 minutos la primera vez (GOOGLEFINANCE calcula en tu hoja).</div>';
+  google.script.run.withSuccessHandler(r=>{if(r.status==='error')alert('GOOGLEFINANCE devolvió error al escribir las fórmulas (separador «'+r.sep+'»). Avísame y lo reviso.');else if(r.status==='pending')alert('GOOGLEFINANCE aún está calculando. Espera un minuto y pulsa Actualizar.');load()})
+  .withFailureHandler(e=>{$('#hs').innerHTML='<span class="err">Error: '+(e.message||e)+'</span>'}).buildHistory();
+}
+
+/* ---------- utilidades de cálculo ---------- */
+function bis(a,d){let lo=0,hi=a.length-1,r=-1;while(lo<=hi){const m=(lo+hi)>>1;if(a[m][0]<=d){r=m;lo=m+1}else hi=m-1}return r}
+function xirr(fl){
+  fl=fl.filter(x=>isFinite(x.a)&&x.a!==0).sort((a,b)=>a.d.localeCompare(b.d));
+  if(!fl.some(x=>x.a<0)||!fl.some(x=>x.a>0))return NaN;
+  const t0=fl[0].d,f=r=>fl.reduce((s,x)=>s+x.a/Math.pow(1+r,days(x.d,t0)/365),0);
+  let lo=-0.9999,hi=10;if(f(lo)*f(hi)>0)return NaN;
+  for(let i=0;i<200;i++){const m=(lo+hi)/2;f(lo)*f(m)<=0?hi=m:lo=m}
+  return (lo+hi)/2;
+}
+function fxNow(ccy){if(ccy==='EUR'||!ccy)return 1;const e=D.emp.find(x=>x.ccy===ccy&&x.fxN>0);return e?1/e.fxN:1}
+
+/* Serie semanal + días de operación: factor TWR (f), valor (v), aportación neta (inv) */
+function buildSeries(){
+  const H=D.hist,ev=[],tras=new Set(D.lots.filter(l=>l.tipo==='traspaso').map(l=>l.t+'|'+l.fc));
+  FL=[];
+  D.lots.forEach(l=>{
+    ev.push({d:l.fc,t:l.t,q:l.q,p:l.eur/l.q,s:1,inv:l.flujoC?l.eur:0});
+    if(l.flujoC)FL.push({d:l.fc,a:-l.eur});
+    if(l.fv){const cash=!tras.has(l.t+'|'+l.fv);ev.push({d:l.fv,t:l.t,q:l.q,p:l.eurV/l.q,s:-1,inv:cash?-l.eurV:0});if(cash)FL.push({d:l.fv,a:l.eurV})}
+  });
+  D.divs.forEach(x=>{if(!isFinite(x.net)||x.net==null)return;ev.push({d:x.f,div:x.net,isDiv:true});FL.push({d:x.f,a:x.net})});
+  ev.sort((a,b)=>a.d.localeCompare(b.d));
+  const first=ev.length?ev[0].d:D.today,set=new Set(ev.map(e=>e.d));set.add(D.today);
+  if(H){Object.values(H.px).forEach(o=>o.pts.forEach(p=>set.add(p[0])));Object.values(H.fx).forEach(a=>a.forEach(p=>set.add(p[0])))}
+  const dates=[...set].filter(d=>d>=first&&d<=D.today).sort(),by={};ev.forEach(e=>(by[e.d]=by[e.d]||[]).push(e));
+  const hold={},lt={};let prev=null,f=1,inv=0;SER=[];
+  const price=(t,d,tr)=>{
+    if(tr[t]>0)return tr[t];
+    const h=H&&H.px[t];let p=null;
+    if(h&&h.pts.length){const i=bis(h.pts,d);if(i>=0){p=h.pts[i][1]/h.div;if(h.ccy!=='EUR'){const a=H.fx[h.ccy],j=a?bis(a,d):-1;p*=j>=0?a[j][1]:fxNow(h.ccy)}}}
+    return p>0?p:(lt[t]||0)};
+  const val=(d,tr)=>Object.keys(hold).reduce((s,t)=>s+(Math.abs(hold[t])>1e-9?hold[t]*price(t,d,tr):0),0);
+  for(const d of dates){
+    const day=by[d]||[],tr={};
+    day.forEach(e=>{if(e.t&&e.p>0){lt[e.t]=e.p;tr[e.t]=e.p}});
+    const isEnd=d===D.today,vb=isEnd?D.totals.valor:val(d,tr);let dv=0;
+    if(prev>0&&isFinite(vb))f*=(vb+(day.reduce((s,e)=>s+(e.isDiv?e.div:0),0)))/prev;
+    day.forEach(e=>{if(e.isDiv)dv+=e.div;else{hold[e.t]=(hold[e.t]||0)+e.s*e.q;inv+=e.inv}});
+    const v=isEnd?D.totals.valor:val(d,tr);
+    SER.push({d,f,v,inv});prev=v;
+  }
+  HOLD=hold;
+  buildRend();
+  if(!S.src){const hasH=H&&Object.values(H.px).some(o=>o.pts.length);S.src=hasH?'hist':(SERR.length?'rend':'hist')}
+}
+/* Serie alternativa desde la pestaña Rend. (valoraciones mensuales; flujo = variación de «Coste bolsa») */
+function buildRend(){
+  SERR=[];const r=[...(D.rend||[])].sort((a,b)=>a.f.localeCompare(b.f));if(r.length<2)return;
+  const last=r[r.length-1];
+  if(D.today>last.f&&days(D.today,last.f)>3){
+    let c=last.c;D.lots.forEach(l=>{if(l.flujoC&&l.fc>last.f)c+=l.eur;if(l.fv&&l.fv>last.f&&l.eurV)c-=l.eurV});
+    r.push({f:D.today,c,v:D.totals.valor})}
+  let f=1;SERR.push({d:r[0].f,f,v:r[0].v,inv:r[0].c});
+  for(let i=1;i<r.length;i++){const F=r[i].c-r[i-1].c;f*=(r[i].v-F)/r[i-1].v;SERR.push({d:r[i].f,f,v:r[i].v,inv:r[i].c})}
+}
+function windowStart(per){
+  if(per==='all')return null;
+  let s;if(per==='ytd')s=(+D.today.slice(0,4)-1)+'-12-31';
+  else{const dt=new Date(D.today+'T00:00:00Z');dt.setUTCFullYear(dt.getUTCFullYear()-({'1y':1,'3y':3,'5y':5})[per]);s=dt.toISOString().slice(0,10)}
+  const B=ser();return B.length&&s>B[0].d?s:null;
+}
+function perf(per){
+  const B=ser();let s=windowStart(per);const first=B[0].d;let f0=1,v0=0,i0=-1;
+  if(S.src==='rend'&&!s)s=first;                    // con Rend. el inicio es su primera fecha: el valor inicial cuenta como aportación
+  if(s){i0=bis(B.map(x=>[x.d]),s);if(i0>=0){f0=B[i0].f;v0=B[i0].v}}
+  const last=B[B.length-1],twr=last.f/f0-1,start=s&&i0>=0?s:first,yrs=days(D.today,start)/365;
+  const fl=FL.filter(x=>!s||i0<0||x.d>s);if(s&&i0>=0)fl.push({d:s,a:-v0});
+  const mwr=xirr([...fl,{d:D.today,a:D.totals.valor}]);
+  return{twr,ann:yrs>=1?Math.pow(1+twr,1/yrs)-1:NaN,mwr,yrs,start,curve:B.filter(x=>x.d>=start).map(x=>({d:x.d,v:x.f/f0-1}))};
+}
+
+/* ---------- gráficos SVG ---------- */
+const SYM={EUR:'€',USD:'$',GBP:'£',CHF:'CHF',CAD:'C$',JPY:'¥',HKD:'HK$',AUD:'A$',DKK:'kr',SEK:'kr',NOK:'kr'};
+const sym=c=>SYM[c]||c||'';
+const FLAGS={'eeuu':'🇺🇸','ee.uu.':'🇺🇸','estados unidos':'🇺🇸','usa':'🇺🇸','espana':'🇪🇸','francia':'🇫🇷','paises bajos':'🇳🇱','holanda':'🇳🇱','reino unido':'🇬🇧','uk':'🇬🇧','alemania':'🇩🇪','suiza':'🇨🇭','irlanda':'🇮🇪','canada':'🇨🇦','italia':'🇮🇹','portugal':'🇵🇹','belgica':'🇧🇪','dinamarca':'🇩🇰','suecia':'🇸🇪','noruega':'🇳🇴','finlandia':'🇫🇮','japon':'🇯🇵','china':'🇨🇳','hong kong':'🇭🇰','australia':'🇦🇺','brasil':'🇧🇷','mexico':'🇲🇽','luxemburgo':'🇱🇺','austria':'🇦🇹','singapur':'🇸🇬','india':'🇮🇳','corea del sur':'🇰🇷','israel':'🇮🇱','taiwan':'🇹🇼','bermudas':'🇧🇲','islas caiman':'🇰🇾','grecia':'🇬🇷','polonia':'🇵🇱','sudafrica':'🇿🇦','argentina':'🇦🇷','chile':'🇨🇱','nueva zelanda':'🇳🇿','jersey':'🇯🇪','guernsey':'🇬🇬'};
+const flag=n=>{const k=String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();return FLAGS[k]||'🏳️'};
+let WX=0,CLKID=null;const CLK={},CHF={};
+function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel)}
+function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML='';$('#xt').textContent=title;$('#xv').classList.remove('hide');
+  WX=Math.round(Math.min(900,Math.max(340,innerWidth-48)));CLKID=sel;try{fn('#xc')}finally{WX=0;CLKID=null}}
+function bindPos(root){document.querySelectorAll(root+' [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos))}
+function showList(title,rows){
+  const tot=rows.reduce((s,r)=>s+r.val,0);rows.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+  $('#dtc').innerHTML=`<div class="dh"><b style="font-size:17px">${title}</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:6px 0 10px">${rows.length} elementos · Total <b class="${cl(tot)}">${HIDE?'•••':fm(tot)+' €'}</b></div>`+
+  (rows.length?rows.map(r=>{const k=D.positions.some(p=>p.t===r.t);return `<div class="rowp" ${k?`data-pos="${r.t}"`:'style="cursor:default"'}>${r.t?logo(r.t):''}<span class="nmx" style="flex:1;width:auto"><b>${r.t||r.label}</b> <span class="k">${r.sub||''}</span></span><b class="${cl(r.val)}">${HIDE?'•••':fm(r.val)+' €'}</b></div>`}).join(''):'<div class="note">Sin datos.</div>');
+  bindPos('#dtc');$('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
+}
+function showGroup(g){
+  const tot=D.positions.filter(p=>vis(p.t)).reduce((s,p)=>s+(p.val||0),0),rows=(g.mem||[]).slice().sort((a,b)=>b.val-a.val);
+  $('#dtc').innerHTML=`<div class="dh"><b style="font-size:17px">${g.label}</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:6px 0 10px">${rows.length} posiciones · ${fm(g.value/tot*100,1)} % de la cartera${HIDE?'':' · '+fm(g.value,0)+' €'}</div>`+
+  rows.map(p=>`<div class="rowp" data-pos="${p.t}">${logo(p.t)}<span class="nmx" style="flex:1;width:auto"><b>${p.t}</b> <span class="k">${(EMP[p.t]||{}).name||''}</span></span><b>${fm(p.val/tot*100,1)} %</b><span class="k" style="width:70px;text-align:right">${HIDE?'•••':fm(p.val,0)+' €'}</span></div>`).join('');
+  bindPos('#dtc');$('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
+}
+const fdate=d=>d?d.slice(8)+'/'+d.slice(5,7)+'/'+d.slice(0,4):'';
+/* Tooltip común: al tocar o arrastrar sobre el gráfico muestra la información del punto más cercano */
+function tipHook(root,W,fn){
+  const cw=root.querySelector('.cw'),svg=cw.querySelector('svg'),tt=cw.querySelector('.tt');
+  const off=()=>{tt.classList.add('hide');const c=svg.querySelector('.cur');if(c)c.setAttribute('opacity',0);const d=svg.querySelector('.dots');if(d)d.innerHTML='';const h=svg.querySelector('.hl');if(h)h.setAttribute('width',0)};
+  const on=ev=>{const r=svg.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*W,res=fn(vx,svg);
+    if(!res){off();return}
+    tt.innerHTML=res.html;tt.classList.remove('hide');const tw=tt.offsetWidth,lx=res.x/W*r.width;
+    tt.style.left=Math.max(0,Math.min(r.width-tw,lx-tw/2))+'px'};
+  svg.addEventListener('pointermove',on);svg.addEventListener('pointerdown',on);
+  svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
+}
+function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
+  W=WX||W;const H=WX?300:200,mL=44,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
+  const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
+  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
+  const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
+  lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="${mL-4}" y="${y+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
+  labels.forEach((l,i)=>{let yp=Y(0),yn=Y(0);
+    series.forEach(s=>{const v=s.data[i]||0,h=Math.abs(v)*sc,col=(series.length===1&&v<0)?'#d93025':s.color;
+      if(v>0){yp-=h;g+=`<rect x="${mL+i*bw+bw*.15}" y="${yp}" width="${bw*.7}" height="${h}" fill="${col}"/>`}
+      else if(v<0){g+=`<rect x="${mL+i*bw+bw*.15}" y="${yn}" width="${bw*.7}" height="${h}" fill="${col}"/>`;yn+=h}});
+    g+=`<text x="${mL+i*bw+bw/2}" y="${H-7}" font-size="${n>8?9:10}" text-anchor="middle" fill="var(--mu)">${l}</text>`});
+  g+=`<rect class="hl" x="0" y="${mT}" width="0" height="${ph}" fill="var(--ac)" opacity=".1"/>`;
+  $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
+  tipHook($(id),W,(vx,svg)=>{
+    const i=Math.floor((vx-mL)/bw);if(vx<mL||i<0||i>=n)return null;
+    const h=svg.querySelector('.hl');h.setAttribute('x',mL+i*bw);h.setAttribute('width',bw);
+    const rows=series.map(s=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fh(s.data[i]||0)}</b></div>`).join('');
+    return{x:mL+i*bw+bw/2,html:`<div class="k">${labels[i]}</div>${rows}${series.length>1?`<div>Total <b>${fh(tot[i])}</b></div>`:''}`}});
+  const oc=CLK[CLKID||id];if(oc)$(id).querySelector('svg').addEventListener('click',ev=>{const sv=$(id).querySelector('svg'),r=sv.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*W,i=Math.floor((vx-mL)/bw);if(vx>=mL&&i>=0&&i<n)oc(i)});
+}
+function hbars(id,items,fmt=n=>fh(n,0)){
+  if(!items.length){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
+  const max=Math.max(...items.map(x=>x.value));
+  $(id).innerHTML=items.map((x,i)=>`<div ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.t?logo(x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${x.value/max*100}%;background:${PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
+  bindPos(id);
+}
+function line(id,series,fmt=pc,W=640){
+  W=WX||W;
+  series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
+  const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
+  const H=WX?320:(W<500?200:230),m=W<500?44:52,xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
+  const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
+  let g='';[y0,(y0+y1)/2,y1].forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="${m-4}" y="${sy(v)+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
+  if(y0<0)g+=`<line x1="${m}" x2="${W-6}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--mu)" stroke-dasharray="3 3"/>`;
+  series.forEach(s=>g+=`<polyline points="${s.pts.map(p=>sx(new Date(p.d).getTime()).toFixed(1)+','+sy(p.v).toFixed(1)).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2"/>`);
+  g+=`<text x="${m}" y="${H-5}" font-size="10" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d<a?p.d:a,'9999'))}</text><text x="${W-6}" y="${H-5}" font-size="10" text-anchor="end" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d>a?p.d:a,''))}</text>`;
+  g+=`<line class="cur" x1="0" x2="0" y1="6" y2="${H-22}" stroke="var(--mu)" stroke-dasharray="3 3" opacity="0"/><g class="dots"></g>`;
+  $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
+  const XS=series.map(s=>s.pts.map(p=>new Date(p.d).getTime()));
+  tipHook($(id),W,(vx,svg)=>{
+    if(vx<m||vx>W-6)return null;
+    const t=x0+(vx-m)/(W-m-6)*(x1-x0);let dots='',rows='',ax=null,date='';
+    series.forEach((s,si)=>{const xs=XS[si];if(!xs.length)return;let lo=0,hi=xs.length-1;
+      while(lo<hi){const mid=(lo+hi)>>1;if(xs[mid]<t)lo=mid+1;else hi=mid}
+      let i=lo;if(i>0&&Math.abs(xs[i-1]-t)<Math.abs(xs[i]-t))i--;
+      const p=s.pts[i],px=sx(xs[i]);if(ax==null){ax=px;date=p.d}
+      dots+=`<circle cx="${px}" cy="${sy(p.v)}" r="3.5" fill="${s.color}" stroke="#fff" stroke-width="1"/>`;
+      rows+=`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fmt(p.v)}</b></div>`});
+    if(ax==null)return null;
+    const c=svg.querySelector('.cur');c.setAttribute('x1',ax);c.setAttribute('x2',ax);c.setAttribute('opacity',1);svg.querySelector('.dots').innerHTML=dots;
+    return{x:ax,html:`<div class="k">${fdate(date)}</div>${rows}`}});
+}
+function donut(id,items){
+  const tot=items.reduce((s,x)=>s+x.value,0);if(!(tot>0)){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
+  const R=40,C=2*Math.PI*R;let acc=0,g='';
+  items.forEach((x,i)=>{const fr=x.value/tot;g+=`<circle data-gi="${i}" style="cursor:pointer" r="${R}" cx="60" cy="60" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="22" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 60 60)"><title>${x.label}: ${fm(fr*100,1)} %</title></circle>`;acc+=fr});
+  $(id).innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><svg viewBox="0 0 120 120" width="150">${g}</svg><div style="font-size:13px">${items.map((x,i)=>`<div data-gi="${i}" style="cursor:pointer;padding:1px 0"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};margin-right:6px"></i>${x.label} <span class="k">${fm(x.value/tot*100,1)} %</span></div>`).join('')}</div></div>`;
+  document.querySelectorAll(id+' [data-gi]').forEach(e=>e.onclick=()=>showGroup(items[+e.dataset.gi]));
+}
+function group(list,keyf,valf,top=8){
+  const m={},mem={};list.forEach(x=>{const k=keyf(x)||'Otros';m[k]=(m[k]||0)+valf(x);(mem[k]=mem[k]||[]).push(x)});
+  let a=Object.entries(m).map(([label,value])=>({label,value,mem:mem[label]})).sort((x,y)=>y.value-x.value);
+  if(a.length>top){const rest=a.slice(top),r=rest.reduce((s,x)=>s+x.value,0);a=a.slice(0,top);a.push({label:'Otros',value:r,mem:rest.flatMap(x=>x.mem)})}return a;
+}
+
+/* ---------- renders ---------- */
+const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['yld','Yield'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['peso','Peso'],['sector','Sector']];
+const STRC=['t','ccy','pais','sector'];
+const num=x=>(x==null||!isFinite(x))?NaN:x;
+const tile=(k,v,sub)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+/* Broker de una posición = el de su último movimiento (compra no vendida o traspaso, aunque el traspaso no tenga acciones) */
+function brokerOf(t){
+  if(D.movs){
+    const ms=D.movs.filter(m=>m.t===t&&m.broker),arr=ms.filter(m=>m.tipo==='traspaso'||!m.sold),use=arr.length?arr:ms;
+    let best=null;use.forEach(m=>{if(!best||m.fc>best.fc||(m.fc===best.fc&&m.r>=best.r))best=m});return best?best.broker:'';
+  }
+  const ls=D.lots.filter(l=>l.t===t&&l.broker),open=ls.filter(l=>!l.fv),arr=open.length?open:ls;
+  let best=null;arr.forEach(l=>{if(!best||l.fc>=best.fc)best=l});return best?best.broker:'';
+}
+function renderSummary(){
+  const T=D.totals,inv=num(T.coste),pct=v=>(isFinite(v)&&inv)?v/inv:NaN;
+  const lat=num(T.pygNoReal),div=num(T.div),opc=num(T.opc),rea=num(T.pygReal);
+  const sum=[lat,div,opc,rea].reduce((s,v)=>s+(isFinite(v)?v:0),0),tot=isFinite(num(T.tr))?T.tr:sum;
+  const eur=v=>HIDE?'':`<span class="${cl(v)}">${fm(v,0)} €</span>`;
+  const sm=(k,v)=>`<div class="kc"><div class="l">${k}</div><div class="n ${cl(v)}">${pc(pct(v))}</div><div class="s">${eur(v)}&nbsp;</div></div>`;
+  const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' · '}${pc(T.pygDiaPct)}</span> hoy`:'&nbsp;';
+  $('#kp').innerHTML=`<div class="kp3">
+    <div class="kc"><div class="l">Valor</div><div class="n">${HIDE?'•••':fm(T.valor,0)+' €'}</div><div class="s">${dia}</div></div>
+    <div class="kc"><div class="l">Invertido</div><div class="n">${HIDE?'•••':fm(inv,0)+' €'}</div><div class="s">&nbsp;</div></div>
+    <div class="kc"><div class="l">Rentab. total</div><div class="n ${cl(tot)}">${pc(pct(tot))}</div><div class="s">${eur(tot)}&nbsp;</div></div>
+  </div><div class="kp4">${sm('Latente',lat)}${sm('Dividendos',div)}${sm('Opciones',opc)}${sm('Realizado',rea)}</div>`;
+}
+function renderPos(){
+  const f=S;let rows=D.positions.filter(p=>vis(p.t)).map(p=>{
+    const e=EMP[p.t]||{};
+    const yp=p.q>0?p.val/p.q:NaN,yld=(e.divAnual>0&&yp>0)?e.divAnual/yp:NaN;
+    return{...p,pygp:p.cost?p.pyg/p.cost:NaN,pais:e.pais||'',name:e.name||'',broker:brokerOf(p.t),yld}});
+  const brokers=[...new Set(rows.map(r=>r.broker).filter(Boolean))].sort(),
+        paises=[...new Set(rows.map(r=>r.pais).filter(Boolean))].sort(),
+        divisas=[...new Set(rows.map(r=>r.ccy).filter(Boolean))].sort();
+  if(f.fb)rows=rows.filter(r=>r.broker===f.fb);
+  if(f.fp)rows=rows.filter(r=>r.pais===f.fp);
+  if(f.fc)rows=rows.filter(r=>r.ccy===f.fc);
+  const tv=rows.reduce((s,r)=>s+(r.val||0),0);rows.forEach(r=>r.peso=tv?r.val/tv:NaN);
+  const k=S.sort.k,dir=S.sort.d,str=STRC.includes(k);
+  rows.sort((a,b)=>{let x=a[k],y=b[k];
+    if(str)return String(x||'').localeCompare(String(y||''),'es')*dir;
+    x=(x==null||!isFinite(x))?-Infinity*dir:x;y=(y==null||!isFinite(y))?-Infinity*dir:y;return (x-y)*dir||0});
+  const chips=(key,l,opts,lab)=>`<div class="fg"><span class="k">${l}</span><button data-f="${key}" data-v="" class="${!S[key]?'on':''}">Todos</button>${opts.map(o=>`<button data-f="${key}" data-v="${o}" class="${S[key]===o?'on':''}">${lab?lab(o):o}</button>`).join('')}</div>`;
+  $('#pf').innerHTML=chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+`<div class="note">${rows.length} posiciones · toca una cabecera para ordenar, toca una fila para ver sus lotes y dividendos</div>`;
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{S[b.dataset.f]=b.dataset.v;renderPos()});
+  if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
+  else{const c=rows.reduce((s,r)=>s+(r.cost||0),0),g=tv-c;$('#kp').innerHTML='<div class="grid">'+[['Valor (filtro)',fh(tv)],['Coste (filtro)',fh(c)],['PyG no realizado',`<span class="${cl(g)}">${fh(g)} (${pc(c?g/c:NaN)})</span>`],['Posiciones',rows.length]].map(([k,v])=>kpi(k,v)).join('')+'</div><div class="note">Resumen del filtro activo. Quita los filtros para ver el resumen completo.</div>'}
+  $('#tp').innerHTML='<tr>'+COLS.map(([c,l])=>`<th class="srt" data-sort="${c}">${l}${S.sort.k===c?(S.sort.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
+  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td>${fm(p.pmc)}</td><td>${fm(p.px)}</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fm(p.peso*100,1)} %</td><td>${p.sector}</td></tr>`).join('');
+  document.querySelectorAll('[data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
+  document.querySelectorAll('[data-sort]').forEach(h=>h.onclick=()=>{const c=h.dataset.sort;S.sort=S.sort.k===c?{k:c,d:-S.sort.d}:{k:c,d:STRC.includes(c)?1:-1};renderPos()});
+}
+/* Detalle por posición: lotes y dividendos repartidos entre los lotes vivos en cada fecha de cobro (proporcional a acciones) */
+function lotDetail(t){
+  const lots=D.lots.filter(l=>l.t===t).sort((a,b)=>a.fc.localeCompare(b.fc)).map(l=>({...l,div:0,n:0}));
+  const divs=D.divs.filter(x=>x.t===t).sort((a,b)=>a.f.localeCompare(b.f)),orph=[];
+  divs.forEach(x=>{
+    const live=lots.filter(l=>l.fc<=x.f&&(!l.fv||l.fv>x.f)),q=live.reduce((s,l)=>s+l.q,0);
+    if(q>0)live.forEach(l=>{l.div+=x.net*l.q/q;l.n++});else orph.push(x);
+  });
+  return{lots,divs,orph};
+}
+function openDetail(t){
+  const p=D.positions.find(x=>x.t===t)||{},e=EMP[t]||{},d=lotDetail(t),open=d.lots.filter(l=>!l.fv);
+  const dTot=d.divs.reduce((s,x)=>s+x.net,0),cOpen=open.reduce((s,l)=>s+l.eur,0),qOpen=open.reduce((s,l)=>s+l.q,0),yp=p.q>0?p.val/p.q:NaN;
+  const yld=(e.divAnual>0&&yp>0)?e.divAnual/yp*100:NaN,yoc=(e.divAnual>0&&qOpen>0&&cOpen>0)?e.divAnual/(cOpen/qOpen)*100:NaN;
+  const rows=d.lots.map(l=>{
+    const sold=!!l.fv,pl=sold?l.eurV-l.eur:(p.px?l.q*p.px*fxNow(p.ccy)-l.eur:NaN);
+    return `<tr class="${sold?'sold':''}"><td>${l.fc}</td><td>${l.tipo}</td><td>${fh(l.q,2)}</td><td>${fm(l.eur/l.q)}</td><td>${fh(l.eur)}</td><td>${sold?l.fv:'<span class="up">Abierto</span>'}</td><td>${sold?fh(l.eurV):'–'}</td><td class="${cl(pl)}">${fh(pl)}</td><td>${fh(l.div)}</td><td>${fm(l.eur?l.div/l.eur*100:NaN)} %</td></tr>`}).join('');
+  $('#dtc').innerHTML=`<div class="dh"><div>${logo(t)}<b style="font-size:17px">${t}</b> <span class="k">${e.name||''}</span></div><button id="dx">✕ Cerrar</button></div>
+  <div class="grid" style="margin:10px 0">${[['Posición',fh(p.q||0,0)],['PMC',fm(p.pmc)],['Valor €',fh(p.val)],['PyG €',`<span class="${cl(p.pyg)}">${fh(p.pyg)}</span>`],['Dividendos cobrados',fh(dTot)],['Yield actual',fm(yld)+' %'],['YOC',fm(yoc)+' %'],['YOC cobrado (histórico)',fm(cOpen?dTot/cOpen*100:NaN)+' %']].map(([k,v])=>kpi(k,v)).join('')}</div>
+  <h2>Lotes de compra</h2><div class="sc"><table style="min-width:820px"><tr><th>Compra</th><th>Tipo</th><th>Acc.</th><th>Precio €</th><th>Coste €</th><th>Venta</th><th>Venta €</th><th>PyG €</th><th>Div. asignado €</th><th>% s/ coste</th></tr>${rows||'<tr><td colspan="10">Sin lotes en Oper.</td></tr>'}</table></div>
+  <div class="note">El PyG de lotes abiertos usa el precio actual de Cartera (aprox. si la divisa no es €). El dividendo de cada cobro se reparte entre los lotes vivos ese día, proporcional a sus acciones.</div>
+  <h2 style="margin-top:14px">Dividendos cobrados por año</h2><div class="sc"><table style="min-width:300px"><tr><th>Año</th><th>Cobros</th><th>Neto €</th></tr>${Object.entries(d.divs.reduce((m,x)=>{const y=x.f.slice(0,4);(m[y]=m[y]||{n:0,s:0}).n++;m[y].s+=x.net;return m},{})).sort().reverse().map(([y,o])=>`<tr><td>${y}</td><td>${o.n}</td><td>${fh(o.s)}</td></tr>`).join('')||'<tr><td colspan="3">–</td></tr>'}</table></div>
+  <h2 style="margin-top:14px">Dividendos cobrados (${d.divs.length})</h2><div class="sc"><table style="min-width:360px"><tr><th>Fecha</th><th>Bruto €</th><th>Neto €</th></tr>${d.divs.slice().reverse().map(x=>`<tr><td>${x.f}</td><td>${fh(x.gross)}</td><td>${fh(x.net)}</td></tr>`).join('')||'<tr><td colspan="3">Sin dividendos registrados</td></tr>'}</table></div>
+  ${d.orph.length?`<div class="note fc">${d.orph.length} cobro(s) sin lote vivo en esa fecha (¿cambio de ticker o lote sin registrar?): ${d.orph.map(x=>x.f).join(', ')}</div>`:''}`;
+  $('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
+}
+const PERS=[['all','Desde el inicio'],['ytd','YTD'],['1y','1 año'],['3y','3 años'],['5y','5 años']];
+function renderRent(){
+  const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);
+  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Desde la 1.ª compra${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}">Desde Rend. (${SERR[0].d})</button>`:'')+'<span class="sep"></span>';
+  $('#per').innerHTML=srcB+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p;renderRent()});
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.src=b.dataset.s;S.per='all';renderRent();renderCharts()});
+  if(!ser().length){$('#kr').innerHTML='<div class="k">Sin datos.</div>';return}
+  if(!windowStart(S.per)&&S.per!=='all')S.per='all';
+  const r=perf(S.per),inc=r.yrs>=1;
+  $('#kr').innerHTML=[['TWR',`<span class="${cl(r.twr)}">${pc(r.twr)}</span>`],['TWR anualizado',inc?`<span class="${cl(r.ann)}">${pc(r.ann)}</span>`:'n/d (&lt; 1 año)'],['MWR (TIR anualizada)',`<span class="${cl(r.mwr)}">${pc(r.mwr)}</span>`],['Desde',r.start],['Valor actual',fh(D.totals.valor)],['Aportación neta',fh(ser()[ser().length-1].inv)]].map(([k,v])=>kpi(k,v)).join('');
+  line('#ch1',[{name:'TWR',color:PAL[0],pts:r.curve}]);
+  line('#ch2',[{name:'Valor de cartera',color:PAL[0],pts:ser().map(x=>({d:x.d,v:x.v}))},{name:'Aportación neta',color:PAL[2],pts:ser().map(x=>({d:x.d,v:x.inv}))}],n=>fh(n,0));
+  const h=D.hist;let msg;
+  if(!h)msg='<b>Histórico de precios: sin construir.</b> El TWR actual usa solo el último precio operado de cada valor (poco preciso). Constrúyelo para valorar la cartera cada semana.';
+  else{const tot=Object.keys(h.px).length,bad=h.missing.length+h.noEmp.length;
+    msg=`<b>Histórico de precios:</b> ${tot-h.missing.length} de ${tot} tickers con datos semanales`+(bad?` · <span class="fc">${bad} sin histórico</span> (usan el último precio operado): ${[...h.missing,...h.noEmp].join(', ')}`:'')+(h.stale?' · <span class="fc">hay tickers nuevos: reconstruye</span>':'')}
+  const lw=SER.length>1?SER[SER.length-2]:null,gap=lw&&D.totals.valor?lw.v/D.totals.valor-1:NaN;
+  if(h&&isFinite(gap)&&Math.abs(gap)>0.08)msg+=`<div class="note fc">El valor reconstruido a ${lw.d} (${fh(lw.v,0)}) difiere un ${fm(gap*100,1)} % del valor de Cartera (${fh(D.totals.valor,0)}): faltan precios de algunos valores. Mira la pestaña Cuadre.</div>`;
+  $('#hs').innerHTML=msg+'<div class="row" style="margin-top:8px"><button id="bh">'+(h?'↻ Reconstruir histórico':'Construir histórico')+'</button></div>';
+  $('#bh').onclick=buildHist;
+}
+function divModel(){
+  const rec={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=+x.f.slice(0,4),m=+x.f.slice(5,7)-1;((rec[y]=rec[y]||[])[m]=(rec[y][m]||[])).push({t:x.t,d:x.f,a:x.net})});
+  return rec;
+}
+function renderDiv(){
+  const rec=divModel(),cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
+  const years=Object.keys(rec).map(Number);if(!years.includes(cy))years.push(cy);
+  const ymax=Math.max(...years,cy+1);for(let y=Math.min(...years);y<=ymax;y++)if(!years.includes(y))years.push(y);years.sort();
+  if(!years.includes(S.year))S.year=cy;
+  const chips=years.map(y=>`<button data-y="${y}" class="${S.year===y?'on':''}">${y}</button>`).join('');
+  $('#yrs').innerHTML=chips;$('#yrs2').innerHTML=chips;
+  document.querySelectorAll('[data-y]').forEach(b=>b.onclick=()=>{S.year=+b.dataset.y;renderDiv();renderCharts()});
+  const Y=S.year;let totR=0,totF=0,html='';
+  for(let m=0;m<12;m++){
+    const got=(rec[Y]&&rec[Y][m])||[],items=got.map(x=>({...x,f:false}));
+    if(Y>cy||(Y===cy&&m>=cm)){held.forEach(e=>{const a=e.months[m]*e.acc;if(a>0&&!got.some(x=>x.t===e.t))items.push({t:e.t,a,f:true})})}
+    const r=items.filter(x=>!x.f).reduce((s,x)=>s+x.a,0),f=items.filter(x=>x.f).reduce((s,x)=>s+x.a,0);totR+=r;totF+=f;
+    items.sort((a,b)=>b.a-a.a);
+    html+=`<div class="mt ${Y===cy&&m===cm?'cur':''}"><div class="h"><span>${MES[m]} ${Y}</span><span><span class="up">${fh(r)}</span>${f>0?` <span class="fc">+${fh(f)}</span>`:''}</span></div>${items.map(x=>`<div class="it ${x.f?'f':''}"><span>${logo(x.t)}${x.t}${x.d?` <span class="k">${x.d.slice(8)}/${x.d.slice(5,7)}</span>`:''}</span><span class="a">${fh(x.a)}</span></div>`).join('')||'<div class="k">—</div>'}</div>`;
+  }
+  $('#cal').innerHTML=html;
+  (function(){
+    const ys=Object.keys(rec).map(Number).filter(y=>y<=cy).sort((a,b)=>a-b),tots={},rows=[];
+    ys.forEach(y=>{let tot=0,n=0;(rec[y]||[]).forEach(a=>(a||[]).forEach(x=>{tot+=x.a;n++}));
+      const leap=(y%4===0&&(y%100!==0||y%400===0)),dl=y===cy?Math.max(1,Math.round((new Date(D.today)-new Date(y+'-01-01'))/864e5)+1):(leap?366:365);
+      tots[y]=tot;rows.push({y,tot,n,mo:tot/(dl/30.4375),da:tot/dl})});
+    $('#dsum').innerHTML='<tr><th>Año</th><th>Total</th><th>Media/mes</th><th>Media/día</th><th>Cobros</th><th>Δ año ant.</th></tr>'+
+      rows.slice().reverse().map(r=>`<tr class="${r.y===S.year?'sold':''}"><td><b>${r.y}</b>${r.y===cy?' <span class="k">YTD</span>':''}</td><td>${fh(r.tot,0)} €</td><td>${fh(r.mo,0)} €</td><td>${fh(r.da,2)} €</td><td>${r.n}</td><td class="${r.y===cy||!tots[r.y-1]?'':cl(r.tot-tots[r.y-1])}">${r.y===cy||!tots[r.y-1]?'–':pc(r.tot/tots[r.y-1]-1)}</td></tr>`).join('');
+  })();
+  const l12=D.divs.filter(x=>vis(x.t)&&x.f>(new Date(Date.UTC(cy-1,cm,+D.today.slice(8)))).toISOString().slice(0,10)).reduce((s,x)=>s+x.net,0);
+  const ann=held.reduce((s,e)=>s+e.acc*e.divAnual,0),tvv=D.totals.valor,tc=D.totals.coste;
+  $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual estimado',fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
+  const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,10);
+  $('#up').innerHTML=up.length?up.map(e=>`<div class="it" style="font-size:14px;padding:4px 0"><span>${logo(e.t)}<b>${e.t}</b> <span class="k">${e.name||''}</span></span><span><span class="k">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}/${e.nextDate.slice(0,4)}</span> &nbsp; <b>${fh(e.nextTotal)}</b></span></div>`).join(''):'<div class="note">Sin próximos pagos en la columna «Fecha dividendo» de Emp.</div>';
+}
+function renderCharts(){
+  const Y=S.year,cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
+  if(ser().length){$('#per2').innerHTML='<span class="k" style="align-self:center">TWR y valor:</span>'+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
+    document.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})}
+  const rec=divModel(),got=[],fc=[];
+  for(let m=0;m<12;m++){const g=((rec[Y]||[])[m]||[]);got.push(g.reduce((s,x)=>s+x.a,0));
+    let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{if(e.months[m]>0&&!g.some(x=>x.t===e.t))f+=e.months[m]*e.acc});fc.push(f)}
+  const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.net});const yl=Object.keys(yrs).sort();
+  const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
+  const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
+  const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
+  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Opciones (PyG) por mes · '+Y,'a11'],['Dividendos por año','a2'],['Opciones (PyG) por año','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2><div id="${id}" class="cb"></div></div>`).join('');
+  document.querySelectorAll('.xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
+  CLK['#a1']=i=>showList('Dividendos '+MES[i]+' '+Y,((rec[Y]&&rec[Y][i])||[]).map(x=>({t:x.t,sub:fdate(x.d),val:x.a})));
+  CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})))};
+  const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})))};
+  CLK['#a11']=i=>optList('Opciones '+MES[i]+' '+Y,o=>o.f.startsWith(String(Y))&&+o.f.slice(5,7)-1===i);
+  CLK['#a12']=i=>optList('Opciones '+oyl[i],o=>o.f.startsWith(oyl[i]));
+  reg('#a1',id=>bars(id,MES,[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
+  const OP=(D.opc||[]).filter(o=>vis(o.t)),om=Array(12).fill(0),oy={};
+  OP.forEach(o=>{const y=o.f.slice(0,4);oy[y]=(oy[y]||0)+o.pyg;if(y===String(Y))om[+o.f.slice(5,7)-1]+=o.pyg});
+  const oyl=Object.keys(oy).sort();
+  reg('#a11',id=>bars(id,MES,[{name:'PyG opciones',color:PAL[1],data:om}]));
+  reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
+  $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(om.reduce((a,b)=>a+b,0),0)+' €</b> · agrupado por fecha de vencimiento (contratos cerrados de la pestaña Opc.)</div>');
+  reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
+  reg('#a3',id=>hbars(id,topT));
+  reg('#a4',id=>hbars(id,[...ps].sort((a,b)=>b.val-a.val).slice(0,10).map(p=>({t:p.t,label:p.t,value:p.val}))));
+  reg('#a5',id=>donut(id,group(ps,p=>p.sector,p=>p.val)));
+  reg('#a6',id=>donut(id,group(ps,p=>(EMP[p.t]||{}).pais,p=>p.val)));
+  reg('#a7',id=>donut(id,group(ps,p=>p.ccy,p=>p.val)));
+  reg('#a8',id=>donut(id,group(ps,p=>p.sub,p=>p.val)));
+  reg('#a9',id=>line(id,[{name:'TWR',color:PAL[0],pts:pr.curve}],pc,360));
+  const SB=ser().filter(x=>x.d>=pr.start);
+  reg('#a10',id=>line(id,[{name:'Valor',color:PAL[0],pts:SB.map(x=>({d:x.d,v:x.v}))},{name:'Aportación neta',color:PAL[2],pts:SB.map(x=>({d:x.d,v:x.inv}))}],n=>fh(n,0),360));
+}
+function renderCuadre(){
+  const pos={};D.positions.forEach(p=>pos[p.t]=p.q);const rows=[];
+  new Set([...Object.keys(HOLD),...Object.keys(pos)]).forEach(t=>{const a=Math.round((HOLD[t]||0)*1e4)/1e4,b=pos[t]||0;if(Math.abs(a-b)>0.01)rows.push([t,a,b])});
+  $('#cuc').innerHTML=`<b>Acciones: lotes de Oper. vs. posiciones de Cartera</b><div class="note">${rows.length?'Estos tickers no coinciden (cambios de ticker, traspasos, spin-offs…). Afectan a la valoración intermedia del TWR, no al valor final.':'Todo cuadra ✓'}</div>
+  ${rows.length?'<div class="sc"><table style="min-width:360px"><tr><th>Ticker</th><th>Según Oper.</th><th>Según Cartera</th></tr>'+rows.map(r=>`<tr><td>${r[0]}</td><td>${fm(r[1],2)}</td><td>${fm(r[2],2)}</td></tr>`).join('')+'</table></div>':''}
+  <div class="note">Tipos leídos en Oper.: ${Object.entries(D.tipos).map(([k,v])=>k+' ('+v+')').join(', ')}. Filas ignoradas: ${D.skipped}.</div>`;
+}
+/* ---------- Composición: cartera completa con pesos, tickers y logos en varios estilos ---------- */
+const PG=[['','Sin agrupar'],['sector','Sector'],['pais','País'],['ccy','Divisa'],['broker','Broker']];
+function portItems(){
+  const ps=D.positions.filter(p=>p.val>0&&vis(p.t)),tv=ps.reduce((s,p)=>s+p.val,0);
+  return ps.map(p=>{const e=EMP[p.t]||{};return{t:p.t,name:e.name||'',v:p.val,w:tv?p.val/tv:0,pyg:p.pyg,pygp:p.cost?p.pyg/p.cost:NaN,sector:p.sector||'Otros',pais:e.pais||'Otros',ccy:p.ccy||'Otros',broker:brokerOf(p.t)||'Otros'}}).sort((a,b)=>b.v-a.v);
+}
+function groupsOf(items){
+  if(!S.pg)return[{label:'',v:items.reduce((s,i)=>s+i.v,0),items}];
+  const m={};items.forEach(i=>(m[i[S.pg]]=m[i[S.pg]]||[]).push(i));
+  return Object.entries(m).map(([label,it])=>({label,v:it.reduce((s,i)=>s+i.v,0),items:it})).sort((a,b)=>b.v-a.v);
+}
+function tint(g){if(!isFinite(g))return 'var(--card)';const a=Math.min(Math.abs(g)/0.6,1)*0.5+0.12;return g>=0?`rgba(15,157,88,${a})`:`rgba(217,48,37,${a})`}
+function squarify(items,x,y,w,h){
+  items=items.filter(i=>i.v>0);if(!items.length||w<=0||h<=0)return[];
+  const tot=items.reduce((s,i)=>s+i.v,0),out=[];let rest=items.map(i=>({...i,a:i.v/tot*w*h}));
+  const worst=(row,side)=>{const s=row.reduce((a,r)=>a+r.a,0),mx=Math.max(...row.map(r=>r.a)),mn=Math.min(...row.map(r=>r.a));return Math.max(side*side*mx/(s*s),s*s/(side*side*mn))};
+  while(rest.length){
+    const side=Math.min(w,h);let row=[rest[0]],i=1;
+    while(i<rest.length&&worst([...row,rest[i]],side)<=worst(row,side)){row.push(rest[i]);i++}
+    const s=row.reduce((a,r)=>a+r.a,0);
+    if(w>=h){const rw=s/h;let yy=y;row.forEach(r=>{const rh=r.a/rw;out.push({...r,x,y:yy,w:rw,h:rh});yy+=rh});x+=rw;w-=rw}
+    else{const rh=s/w;let xx=x;row.forEach(r=>{const rw=r.a/rh;out.push({...r,x:xx,y,w:rw,h:rh});xx+=rw});y+=rh;h-=rh}
+    rest=rest.slice(row.length);
+  }
+  return out;
+}
+function tileHtml(r){
+  const m=Math.min(r.w,r.h)-2,bg=S.pc==='r'?tint(r.pygp):'var(--card)';
+  const L=m>=90?40:m>=64?32:m>=46?26:m>=34?20:Math.max(12,Math.floor(m-6));
+  const lg=m>=14?logo(r.t,'',L):'';
+  const fs=Math.max(8,Math.min(m>=84?15:13,(r.w-6)/(r.t.length*0.66)));
+  const tk=(r.w>=30&&r.h>=L+fs+6)?`<b style="font-size:${fs.toFixed(1)}px">${r.t}</b>`:'';
+  const wt=(tk&&r.h>=L+fs*2+10&&r.w>=34)?`<span style="font-size:${Math.max(8,fs-1).toFixed(1)}px">${fm(r.w_*100,1)} %</span>`:'';
+  return `<div class="tl" data-pos="${r.t}" title="${r.t} · ${fm(r.w_*100,1)} %${HIDE?'':' · '+fm(r.v,0)+' €'}" style="left:${r.x+1}px;top:${r.y+1}px;width:${r.w-2}px;height:${r.h-2}px;background:${bg}">${lg}${tk}${wt}</div>`;
+}
+function vMos(items,tot){
+  const box=$('#ptv'),W=Math.max(280,box.clientWidth||340),H=W<560?Math.round(Math.min(720,Math.max(520,W*1.8))):Math.round(Math.min(640,Math.max(420,W*0.6)));
+  const gs=groupsOf(items);let html='';
+  items.forEach(i=>i.w_=i.v/tot);
+  if(!S.pg)squarify(items,0,0,W,H).forEach(r=>html+=tileHtml(r));
+  else squarify(gs.map(g=>({...g})),0,0,W,H).forEach(gr=>{
+    html+=`<div class="tg" style="left:${gr.x+1}px;top:${gr.y+1}px;width:${gr.w-2}px;height:${gr.h-2}px"><span class="tgl">${gr.label} · ${fm(gr.v/tot*100,1)} %</span></div>`;
+    squarify(gr.items,gr.x+2,gr.y+17,gr.w-4,gr.h-19).forEach(r=>html+=tileHtml(r))});
+  box.innerHTML=`<div style="position:relative;width:${W}px;height:${H}px">${html}</div>`;
+}
+function vTar(items,tot){
+  $('#ptv').innerHTML=groupsOf(items).map(g=>(S.pg?`<h2 style="margin:12px 0 8px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} % · ${fh(g.v,0)} €</span></h2>`:'')+`<div class="pgrid">${g.items.map(i=>`<div class="pc2" data-pos="${i.t}"><div style="display:flex;align-items:center;gap:10px">${logo(i.t,'xl')}<div style="min-width:0"><b>${i.t}</b><div class="k" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${i.name}</div></div></div><div class="bw"><i style="width:${Math.min(100,i.v/items[0].v*100)}%"></i></div><div style="display:flex;justify-content:space-between;align-items:baseline"><span class="v">${fm(i.v/tot*100,1)} %</span><span class="${cl(i.pygp)}" style="font-size:12px">${pc(i.pygp)}</span></div><div class="k">${fh(i.v,0)} €</div></div>`).join('')}</div>`).join('');
+}
+function vBar(items,tot){
+  const mx=Math.max(...items.map(i=>i.v));
+  $('#ptv').innerHTML=groupsOf(items).map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} %</span></h2>`:'')+g.items.map((i,k)=>`<div class="rowp" data-pos="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk"><i style="width:${i.v/mx*100}%;background:${PAL[k%PAL.length]}"></i></span><span style="width:54px;text-align:right"><b>${fm(i.v/tot*100,1)} %</b></span><span class="k" style="width:64px;text-align:right">${fh(i.v,0)} €</span></div>`).join('')).join('');
+}
+function vAni(items,tot){
+  let sl;
+  if(S.pg)sl=groupsOf(items).map(g=>({label:g.label,v:g.v}));
+  else{sl=items.slice(0,12).map(i=>({label:i.t,t:i.t,v:i.v}));const r=items.slice(12).reduce((s,i)=>s+i.v,0);if(r>0)sl.push({label:'Otros ('+(items.length-12)+')',v:r})}
+  const R=70,C=2*Math.PI*R;let acc=0,g='';
+  sl.forEach((x,i)=>{const fr=x.v/tot;g+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="30" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 100 100)"><title>${x.label}: ${fm(fr*100,1)} %</title></circle>`;acc+=fr});
+  g+=`<text x="100" y="96" text-anchor="middle" font-size="11" fill="var(--mu)">Cartera</text><text x="100" y="114" text-anchor="middle" font-size="15" font-weight="700" fill="var(--tx)">${fh(tot,0)} €</text>`;
+  $('#ptv').innerHTML=`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" width="230">${g}</svg><div style="flex:1;min-width:210px">${sl.map((x,i)=>`<div class="rowp" ${x.t?`data-pos="${x.t}"`:''}><i style="width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};flex:none"></i>${x.t?logo(x.t):''}<span class="nmx" style="flex:1;width:auto"><b>${x.label}</b></span><b>${fm(x.v/tot*100,1)} %</b></div>`).join('')}</div></div>`;
+}
+function renderPort(){
+  if(!D)return;
+  const items=portItems(),tot=items.reduce((s,i)=>s+i.v,0);
+  const chips=(arr,key)=>arr.map(([k,l])=>`<button data-pp="${key}|${k}" class="${S[key]===k?'on':''}">${l}</button>`).join('');
+  $('#ptc').innerHTML=`<div class="fg"><span class="k">Estilo</span>${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ani','Anillo']],'pv')}</div>
+   <div class="fg"><span class="k">Agrupar</span>${chips(PG,'pg')}</div>${S.pv==='mos'?`<div class="fg"><span class="k">Color</span>${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div>`:''}
+   <div class="note" style="margin:0 0 10px">${items.length} posiciones · ${fh(tot,0)} € · toca una para ver sus lotes y dividendos</div><div id="ptv"></div>`;
+  document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
+  ({mos:vMos,tar:vTar,bar:vBar,ani:vAni})[S.pv](items,tot);
+  document.querySelectorAll('#ptv [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
+}
+let rzT=null;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(D&&!$('#pt').classList.contains('hide')&&S.pv==='mos')renderPort()},200)});
+function renderAll(){renderPos();renderRent();renderDiv();renderCharts();renderCuadre();if(!$('#pt').classList.contains('hide'))renderPort()}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));['pos','pt','rent','dv','gr','cu'].forEach(id=>$('#'+id).classList.toggle('hide',id!==b.dataset.t));if(b.dataset.t==='pt')renderPort()});
+const eyeSvg=off=>off?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+function paintEye(){const b=$('#eye');b.innerHTML=eyeSvg(HIDE);b.classList.toggle('on',HIDE);b.title=HIDE?'Mostrar importes':'Ocultar importes'}
+function toggleHide(){HIDE=!HIDE;sv();paintEye();$('#dt').classList.add('hide');if(D)renderAll();const se=$('#s-eye');if(se)se.classList.toggle('on',HIDE)}
+function openSettings(){
+  if(!D)return;
+  const ps=[...D.positions].sort((a,b)=>String(a.t).localeCompare(b.t));
+  $('#stc').innerHTML=`<div class="dh"><b style="font-size:17px">⚙ Ajustes</b><button id="sx">✕ Cerrar</button></div>
+  <div class="row" style="margin:12px 0"><button id="s-eye" class="ib ${HIDE?'on':''}">${eyeSvg(false)} Ocultar importes (solo %)</button><button id="s-conn">🔌 Conexión</button></div>
+  <h2>Posiciones visibles</h2>
+  <div class="note" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
+  <div class="row" style="margin-bottom:6px"><input class="q" id="sq" placeholder="Buscar ticker o nombre…"><button id="sall">Mostrar todas</button></div>
+  <div id="sl">${ps.map(p=>`<label class="pk" data-q="${(p.t+' '+((EMP[p.t]||{}).name||'')).toLowerCase()}"><input type="checkbox" data-h="${p.t}" ${vis(p.t)?'checked':''}>${logo(p.t)}<b>${p.t}</b> <span class="k">${(EMP[p.t]||{}).name||''}</span></label>`).join('')}</div>`;
+  $('#st').classList.remove('hide');
+  $('#sx').onclick=()=>$('#st').classList.add('hide');
+  $('#s-eye').onclick=toggleHide;
+  $('#s-conn').onclick=()=>{$('#st').classList.add('hide');showCfg()};
+  $('#sq').oninput=e=>{const q=e.target.value.toLowerCase().trim();document.querySelectorAll('#sl .pk').forEach(l=>l.classList.toggle('hide',!!q&&!l.dataset.q.includes(q)))};
+  $('#sall').onclick=()=>{HID.clear();sv();updMeta();document.querySelectorAll('#sl input').forEach(i=>i.checked=true);renderAll()};
+  document.querySelectorAll('#sl input').forEach(i=>i.onchange=()=>{if(i.checked)HID.delete(i.dataset.h);else HID.add(i.dataset.h);sv();updMeta();renderAll()});
+}
+$('#xx').onclick=()=>$('#xv').classList.add('hide');
+$('#eye').onclick=toggleHide;$('#cfg').onclick=openSettings;paintEye();
+$('#cs').onclick=()=>{CFG.url=$('#cu').value.trim();CFG.key=$('#ck').value.trim();
+  if(!/^https:\/\/script\.google\.com\//.test(CFG.url)){$('#ce').textContent='La URL debe empezar por https://script.google.com/…';return}
+  try{localStorage.setItem('mc_url',CFG.url);localStorage.setItem('mc_key',CFG.key)}catch(e){}
+  $('#cfgscr').classList.add('hide');LGSTART=false;load()};
+$('#cc').onclick=async()=>{await idb.clear();$('#ce').textContent='Caché borrada.'};
+$('#rf').onclick=()=>{if(!CFG.url||!CFG.key)showCfg();else load()};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if(!CFG.url||!CFG.key)showCfg();else load();
+</script></main></body></html>
