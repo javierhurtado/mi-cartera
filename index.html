@@ -358,8 +358,8 @@ function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML=''
 function bindPos(root){document.querySelectorAll(root+' [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos))}
 function showList(title,rows){
   const tot=rows.reduce((s,r)=>s+r.val,0);rows.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
-  $('#dtc').innerHTML=`<div class="dh"><b style="font-size:17px">${title}</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:6px 0 10px">${rows.length} elementos · Total <b class="${cl(tot)}">${HIDE?'•••':fm(tot)+' €'}</b></div>`+
-  (rows.length?rows.map(r=>{const k=!r.op&&!r.nopos&&D.positions.some(p=>p.t===r.t);return `<div class="rowp" ${k?`data-pos="${r.t}"`:r.op?`data-op="${r.t}" style="cursor:pointer"`:'style="cursor:default"'}>${r.t?logo(r.t):''}<span class="nmx" style="flex:1;width:auto"><b>${r.label||r.t}</b> <span class="k">${r.sub||''}</span></span><b class="${cl(r.val)}">${HIDE?'•••':fm(r.val)+' €'}</b></div>`}).join(''):'<div class="note">Sin datos.</div>');
+  $('#dtc').innerHTML=`<div class="dh"><b style="font-size:17px">${title}</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:6px 0 10px">${rows.length} elementos · Total <b class="${rows.length&&rows.every(r=>r.fc)?'fc':cl(tot)}">${HIDE?'•••':fm(tot)+' €'}</b></div>`+
+  (rows.length?rows.map(r=>{const k=!r.op&&!r.nopos&&D.positions.some(p=>p.t===r.t);return `<div class="rowp" ${k?`data-pos="${r.t}"`:r.op?`data-op="${r.t}" style="cursor:pointer"`:'style="cursor:default"'}>${r.t?logo(r.t):''}<span class="nmx" style="flex:1;width:auto"><b>${r.label||r.t}</b> <span class="${r.fc?'fc':'k'}">${r.sub||''}</span></span><b class="${r.fc?'fc':cl(r.val)}">${HIDE?'•••':fm(r.val)+' €'}</b></div>`}).join(''):'<div class="note">Sin datos.</div>');
   bindPos('#dtc');$('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
 }
 function showGroup(g){
@@ -602,8 +602,8 @@ function renderDiv(){
       rows.slice().reverse().map(r=>`<tr class="${r.y===S.year?'sold':''}"><td><b>${r.y}</b>${r.y===cy?' <span class="k">YTD</span>':''}</td><td>${fh(r.tot,0)} €</td><td>${fh(r.mo,0)} €</td><td>${fh(r.da,2)} €</td><td>${r.n}</td><td class="${r.y===cy||!tots[r.y-1]?'':cl(r.tot-tots[r.y-1])}">${r.y===cy||!tots[r.y-1]?'–':pc(r.tot/tots[r.y-1]-1)}</td></tr>`).join('');
   })();
   const l12=D.divs.filter(x=>vis(x.t)&&x.f>(new Date(Date.UTC(cy-1,cm,+D.today.slice(8)))).toISOString().slice(0,10)).reduce((s,x)=>s+x.net,0);
-  const ann=held.reduce((s,e)=>s+e.acc*e.divAnual,0),tvv=D.totals.valor,tc=D.totals.coste;
-  $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual estimado',fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
+  const ann=Y>=cy?totR+totF:totR,tvv=D.totals.valor,tc=D.totals.coste;
+  $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual'+(Y>=cy?' estimado':''),fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
   const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,3);
   $('#up').innerHTML=up.length?up.map(e=>`<div class="it" style="font-size:14px;padding:4px 0"><span>${logo(e.t)}<b>${e.t}</b> <span class="k">${e.name||''}</span></span><span><span class="k">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}/${e.nextDate.slice(0,4)}</span> &nbsp; <b>${fh(e.nextTotal)}</b></span></div>`).join(''):'<div class="note">Sin próximos pagos</div>';
 }
@@ -624,7 +624,7 @@ function renderCharts(){
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
   CLK['#a1']=i=>showList('Dividendos '+MES[i]+' '+Y,((rec[Y]&&rec[Y][i])||[]).map(x=>({t:x.t,sub:fdate(x.d),val:x.a})));
   CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);const pj=projByT(+y);
-    showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})).concat(Object.entries(pj).map(([t,v])=>({t,sub:'previsto',val:v}))))};
+    showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})).concat(Object.entries(pj).map(([t,v])=>({t,sub:'previsto',fc:true,val:v}))))};
   const optTrades=(t,tt,f)=>showList(tt,OP.filter(o=>o.t===t&&f(o)).sort((a,b)=>b.f.localeCompare(a.f)).map(o=>({t:o.t,nopos:true,label:o.sym||(o.t+' '+o.tipo+(isFinite(o.k)?' '+o.k:'')),sub:(o.sym?'':'')+o.tipo+(isFinite(o.k)&&o.sym?' · strike '+fm(o.k,o.k%1?2:0):'')+' · venc. '+fdate(o.f),val:o.pyg})));
   const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,op:true,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})));
     document.querySelectorAll('#dtc [data-op]').forEach(e=>e.onclick=()=>optTrades(e.dataset.op,e.dataset.op+' · '+tt,f))};
@@ -659,7 +659,7 @@ function cuadreNote(){
 const PG=[['','Sin agrupar'],['sector','Sector'],['pais','País'],['ccy','Divisa'],['broker','Broker']];
 function portItems(){
   const ps=D.positions.filter(p=>p.val>0&&vis(p.t)),tv=ps.reduce((s,p)=>s+p.val,0);
-  return ps.map(p=>{const e=EMP[p.t]||{};return{t:p.t,name:e.name||'',v:p.val,w:tv?p.val/tv:0,pyg:p.pyg,pygp:p.cost?p.pyg/p.cost:NaN,sector:p.sector||'Otros',pais:e.pais||'Otros',ccy:p.ccy||'Otros',broker:brokerOf(p.t)||'Otros'}}).sort((a,b)=>b.v-a.v);
+  return ps.map(p=>{const e=EMP[p.t]||{};return{t:p.t,name:e.name||'',v:p.val,w:tv?p.val/tv:0,cost:p.cost,pyg:p.pyg,pygp:p.cost?p.pyg/p.cost:NaN,sector:p.sector||'Otros',pais:e.pais||'Otros',ccy:p.ccy||'Otros',broker:brokerOf(p.t)||'Otros'}}).sort((a,b)=>b.v-a.v);
 }
 function groupsOf(items){
   if(!S.pg)return[{label:'',v:items.reduce((s,i)=>s+i.v,0),items}];
@@ -711,7 +711,22 @@ function vTar(items,tot){
 }
 function vBar(items,tot){
   const mx=Math.max(...items.map(i=>i.v));
-  $('#ptv').innerHTML=groupsOf(items).map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} %</span></h2>`:'')+g.items.map((i,k)=>`<div class="rowp" data-pos="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk"><i style="width:${i.v/mx*100}%;background:${PAL[k%PAL.length]}"></i></span><span style="width:54px;text-align:right"><b>${fm(i.v/tot*100,1)} %</b></span><span class="k" style="width:64px;text-align:right">${fh(i.v,0)} €</span></div>`).join('')).join('');
+  $('#ptv').innerHTML=groupsOf(items).map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} %</span></h2>`:'')+g.items.map((i,k)=>`<div class="rowp" data-pos="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk"><i style="width:${i.v/mx*100}%;background:${PAL[0]}"></i></span><span style="width:54px;text-align:right"><b>${fm(i.v/tot*100,1)} %</b></span><span class="k" style="width:64px;text-align:right">${fh(i.v,0)} €</span></div>`).join('')).join('');
+}
+function vRen(items,tot){
+  const dvT={};D.divs.filter(x=>vis(x.t)).forEach(x=>dvT[x.t]=(dvT[x.t]||0)+x.net);
+  items.forEach(i=>{i.rev=i.pyg||0;i.dv=dvT[i.t]||0;i.tr=i.rev+i.dv;i.trp=i.cost>0?i.tr/i.cost:NaN});
+  const ok=items.filter(i=>i.cost>0&&isFinite(i.trp));
+  const mn=Math.max(1e-9,...ok.map(i=>Math.max(0,-i.rev/i.cost))),mx=Math.max(1e-9,...ok.map(i=>Math.max(0,i.rev/i.cost)+i.dv/i.cost)),z=mn/(mn+mx)*100,sc=100/(mn+mx);
+  const sR=items.reduce((a,i)=>a+i.rev,0),sD=items.reduce((a,i)=>a+i.dv,0),sC=items.reduce((a,i)=>a+(i.cost||0),0);
+  const seg=(l,w,c)=>`<i style="position:absolute;top:0;bottom:0;left:${l.toFixed(2)}%;width:${Math.max(0,w).toFixed(2)}%;background:${c}"></i>`;
+  const row=i=>{if(!(i.cost>0))return '';const pr=i.rev/i.cost,pd=i.dv/i.cost;let b='';
+    if(pr>=0){b+=seg(z,pr*sc,PAL[1]);b+=seg(z+pr*sc,pd*sc,PAL[0])}else{b+=seg(z+pr*sc,-pr*sc,'#d93025');b+=seg(z,pd*sc,PAL[0])}
+    return `<div class="rowp" data-pos="${i.t}">${logo(i.t)}<div style="width:84px;min-width:84px;line-height:1.2"><b>${i.t}</b><div class="k" style="font-size:11px">${HIDE?'':fm(i.cost,0)+' €'}</div></div><div style="flex:1;position:relative;height:16px;background:var(--bd);border-radius:4px;overflow:hidden">${b}<i style="position:absolute;top:0;bottom:0;left:${z.toFixed(2)}%;width:1px;background:var(--mu);opacity:.6"></i></div><div style="width:70px;text-align:right;line-height:1.2"><b class="${cl(i.tr)}">${pc(i.trp)}</b>${HIDE?'':`<div class="k" style="font-size:11px">${fm(i.tr,0)} €</div>`}</div></div>`};
+  const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>(isFinite(b.trp)?b.trp:-Infinity)-(isFinite(a.trp)?a.trp:-Infinity))}));
+  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 8px"><span><i style="background:${PAL[1]}"></i>Revalorización</span><span><i style="background:#d93025"></i>Pérdida</span><span><i style="background:${PAL[0]}"></i>Dividendos</span></div>
+   <div class="note" style="margin:0 0 8px">Rentabilidad sobre coste: <b class="${cl(sR+sD)}">${pc(sC?(sR+sD)/sC:NaN)}</b>${HIDE?'':' · revalorización <b class="'+cl(sR)+'">'+fm(sR,0)+' €</b> · dividendos <b>'+fm(sD,0)+' €</b>'}</div>`
+   +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+g.items.map(row).join('')).join('');
 }
 function vAni(items,tot){
   let sl;
@@ -727,14 +742,14 @@ function renderPort(){
   if(!D)return;
   const items=portItems(),tot=items.reduce((s,i)=>s+i.v,0);
   const chips=(arr,key)=>arr.map(([k,l])=>`<button data-pp="${key}|${k}" class="${S[key]===k?'on':''}">${l}</button>`).join('');
-  $('#ptc').innerHTML=`<div class="fg"><span class="k">Estilo</span>${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ani','Anillo']],'pv')}</div>
+  $('#ptc').innerHTML=`<div class="fg"><span class="k">Estilo</span>${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo']],'pv')}</div>
    <div class="fg"><span class="k">Agrupar</span>${chips(PG,'pg')}</div>${S.pv==='mos'?`<div class="fg"><span class="k">Color</span>${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div>`:''}
    <div class="note" style="margin:0 0 10px">${items.length} posiciones · ${fh(tot,0)} € · toca una para ver sus lotes y dividendos</div><div id="ptv"></div>`;
   document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
-  ({mos:vMos,tar:vTar,bar:vBar,ani:vAni})[S.pv](items,tot);
+  ({mos:vMos,tar:vTar,bar:vBar,ren:vRen,ani:vAni})[S.pv](items,tot);
   document.querySelectorAll('#ptv [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
   const PIM={};items.forEach(i=>PIM[i.t]=i);
-  bindTip('#ptv','[data-pos]',el=>{const i=PIM[el.dataset.pos];return i?`<b>${i.t}</b> <span class="k">${i.name||''}</span><br>${fm(i.w*100,1)} % de la cartera${HIDE?'':' · '+fm(i.v,0)+' €'}<br><span class="${cl(i.pygp)}">${pc(i.pygp)}</span> <span class="k">s/ coste</span>`:''});
+  bindTip('#ptv','[data-pos]',el=>{const i=PIM[el.dataset.pos];if(i&&S.pv==='ren')return `<b>${i.t}</b> <span class="k">${i.name||''}</span><br>Revalorización: <span class="${cl(i.rev)}">${HIDE?'':fm(i.rev,0)+' € · '}${pc(i.cost>0?i.rev/i.cost:NaN)}</span><br>Dividendos: ${HIDE?'':fm(i.dv,0)+' € · '}${pc(i.cost>0?i.dv/i.cost:NaN)}<br>Total: <b class="${cl(i.tr)}">${HIDE?'':fm(i.tr,0)+' € · '}${pc(i.trp)}</b>`;return i?`<b>${i.t}</b> <span class="k">${i.name||''}</span><br>${fm(i.w*100,1)} % de la cartera${HIDE?'':' · '+fm(i.v,0)+' €'}<br><span class="${cl(i.pygp)}">${pc(i.pygp)}</span> <span class="k">s/ coste</span>`:''});
 }
 let rzT=null;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(D&&!$('#pt').classList.contains('hide')&&S.pv==='mos')renderPort()},200)});
 function renderAll(){renderPos();renderRent();renderDiv();renderCharts();if(!$('#pt').classList.contains('hide'))renderPort()}
