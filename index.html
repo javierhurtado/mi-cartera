@@ -262,7 +262,7 @@ function load(done){
       if(!window.__CACHED){LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
       if(!(window.__CACHED)){$('#upd').dataset.b=''}
       updTxt(!!window.__CACHED);
-      META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();
+      META=D.lots.length+' lotes · '+D.divs.length+' dividendos';updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
