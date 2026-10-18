@@ -215,7 +215,7 @@ const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:'
 const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
-function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
+function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+(HID.size>1?' ocultas':' oculta'):'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
 function addLogos(map,tv){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
   const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
@@ -262,7 +262,7 @@ function load(done){
       if(!window.__CACHED){LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
       if(!(window.__CACHED)){$('#upd').dataset.b=''}
       updTxt(!!window.__CACHED);
-      META=D.lots.length+' lotes · '+D.divs.length+' dividendos';updMeta();
+      META=D.lots.length+' lotes · '+D.divs.length+' div.';updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
@@ -807,7 +807,7 @@ function openSettings(){
   <div class="note hide" id="vnote" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
   <div class="row" style="margin-bottom:6px"><input class="q" id="sq" placeholder="Buscar ticker o nombre…"><button id="sall">Mostrar todas</button></div>
   <div id="sl">${ps.map(p=>`<label class="pk" data-q="${(p.t+' '+((EMP[p.t]||{}).name||'')).toLowerCase()}"><input type="checkbox" data-h="${p.t}" ${vis(p.t)?'checked':''}>${logo(p.t)}<b>${p.t}</b> <span class="k">${(EMP[p.t]||{}).name||''}</span></label>`).join('')}</div>
-  <div class="note" id="smeta" style="margin-top:18px;text-align:center"></div>`;
+  <div class="note" id="smeta" style="margin-top:18px;text-align:center;font-size:12px;white-space:nowrap"></div>`;
   updMeta();$('#vinfo').onclick=()=>$('#vnote').classList.toggle('hide');
   $('#st').classList.remove('hide');
   $('#sx').onclick=()=>$('#st').classList.add('hide');
