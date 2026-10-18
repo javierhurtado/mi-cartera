@@ -24,7 +24,7 @@ main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(saf
 input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
-button.inf{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:0;padding:0;margin:0 0 0 6px;border:1px solid var(--mu);border-radius:50%;background:transparent;color:var(--mu);font:italic 600 13px/1 Georgia,serif;vertical-align:middle;cursor:pointer}button.inf.hide{display:none}#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
+#smeta .u2{display:block}@media(min-width:761px){#smeta .u2{display:inline}#smeta .u2::before{content:' · '}}button.inf{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:0;padding:0;margin:0 0 0 6px;border:1px solid var(--mu);border-radius:50%;background:transparent;color:var(--mu);font:italic 600 13px/1 Georgia,serif;vertical-align:middle;cursor:pointer}button.inf.hide{display:none}#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
 #bmc{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#bmc::-webkit-scrollbar{display:none}#bmc button{flex:none;white-space:nowrap}#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
@@ -113,7 +113,7 @@ svg text{font-family:inherit}
 <div id="app" class="hide">
 <nav id="nav"><button data-t="pos" class="on">Cartera</button><button data-t="pt"><span class="nf">Composición</span><span class="nl">Compos.</span></button><button data-t="rent"><span class="nf">Rentabilidad</span><span class="nl">Rentab.</span></button><button data-t="dv"><span class="nf">Dividendos</span><span class="nl">Divid.</span></button><button data-t="gr"><span class="nf">Gráficos</span><span class="nl">Gráficos</span></button></nav>
 
-<section id="pos"><div class="card" id="kp"></div><div class="card" id="pf"></div><div class="card sc"><table id="tp"></table></div></section>
+<section id="pos"><div class="card" id="kp"></div><div class="card" id="pf"></div><div class="card sc"><table id="tp"></table></div><div class="note" id="upd" style="text-align:center;margin:14px 0 4px"></div></section>
 
 <section id="pt" class="hide"><div class="card" id="ptc"></div></section>
 
@@ -171,7 +171,7 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
   return async(...args)=>{
     let served=false;
     try{
-      if(name==='loadAll'&&!window.__PTR){const c=await idb.get('data');if(c){served=true;ok&&ok(c)}}
+      if(name==='loadAll'&&!window.__PTR){const c=await idb.get('data');if(c){served=true;window.__CACHED=true;try{ok&&ok(c)}finally{window.__CACHED=false}}}
       if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       if(name==='loadTvLogos'){const c=await idb.get('tv');if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       const t=await apiCall(name,args);
@@ -215,7 +215,7 @@ const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:'
 const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
-function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'');$('#meta').textContent=T;const sm=$('#smeta');if(sm)sm.textContent=T}
+function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
 function addLogos(map,tv){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
   const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
@@ -242,16 +242,26 @@ function fetchTv(){
 }
 
 /* ---------- carga ---------- */
+let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
+function updTxt(busy){const e=$('#upd');if(!e)return;if(busy){e.textContent='Actualizando…';return}
+  if(!LASTUPD){e.textContent='';return}
+  const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
+  e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
+{const iv=setInterval(()=>{if(!$('#upd').dataset.b)updTxt(false)},60000);if(iv&&iv.unref)iv.unref()}
 function load(done){
+  $('#upd').dataset.b='1';updTxt(true);
   if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
   const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
-  const fail=m=>{clearTimeout(slow);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
+  const fail=m=>{clearTimeout(slow);$('#upd').dataset.b='';updTxt(false);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
   google.script.run.withSuccessHandler(r=>{
     clearTimeout(slow);
     try{
       if(!r)throw new Error('El servidor no devolvió datos.');
       D=typeof r==='string'?JSON.parse(r):r;EMP={};D.emp.forEach(e=>EMP[e.t]=e);
       $('#msg').classList.add('hide');$('#app').classList.remove('hide');
+      if(!window.__CACHED){LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
+      if(!(window.__CACHED)){$('#upd').dataset.b=''}
+      updTxt(!!window.__CACHED);
       META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
