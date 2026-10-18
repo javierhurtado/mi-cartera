@@ -721,10 +721,10 @@ function vRen(items,tot){
   items.forEach(i=>{i.rev=i.pyg||0;i.dv=dvT[i.t]||0;i.tr=i.rev+i.dv;i.trp=i.cost>0?i.tr/i.cost:NaN});
   const C1=PAL[0],CU=PAL[1],C3=PAL[2],CD=PAL[3];
   const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,xmax=Math.max(1,...items.map(topV)),xmin=Math.min(0,...items.map(i=>i.rev)),span=xmax-xmin,p=v=>((v-xmin)/span*100).toFixed(2)+'%',w=(a,b)=>(Math.max(b-a,0)/span*100).toFixed(2)+'%';
-  const seg=(a,b,c)=>b>a?`<i style="position:absolute;top:0;left:${p(a)};width:${w(a,b)};background:${c}"></i>`:'';
+  const seg=(a,b,c)=>b>a?`<i style="position:absolute;top:0;bottom:0;height:auto;border-radius:0;left:${p(a)};width:${w(a,b)};background:${c}"></i>`:'';
   const row=i=>{const c=i.cost||0,r=i.rev,d=i.dv;
     const bar=(r>=0?seg(0,c,C1)+seg(c,c+r,CU)+seg(c+r,c+r+d,C3):seg(r,0,CD)+seg(0,c,C1)+seg(c,c+d,C3));
-    return `<div class="rowp" data-pos="${i.t}" data-hi="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk" style="position:relative;overflow:hidden">${bar}</span><span class="${cl(i.tr)}" style="width:64px;text-align:right"><b>${isFinite(i.trp)?(i.trp>=0?'+':'')+fm(i.trp*100,1)+' %':'–'}</b></span><span class="k" style="width:64px;text-align:right">${HIDE?'•••':fh(i.tr,0)+' €'}</span></div>`};
+    return `<div class="rowp" data-pos="${i.t}" data-hi="${i.t}">${logo(i.t)}<span class="nmx" style="width:54px"><b>${i.t}</b></span><span class="trk" style="position:relative;overflow:hidden">${bar}</span><span class="${cl(i.tr)}" style="width:64px;text-align:right"><b>${isFinite(i.trp)?(i.trp>=0?'+':'')+fm(i.trp*100,1)+' %':'–'}</b></span></div>`};
   const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>topV(b)-topV(a))}));
   $('#ptv').innerHTML=`<div class="leg" style="margin:12px 0 16px;gap:10px 14px"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:${CU}"></i>Revalorización</span><span><i style="background:${CD}"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
    +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+g.items.map(row).join('')).join('');
