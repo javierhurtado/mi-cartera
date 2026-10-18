@@ -752,7 +752,7 @@ function renderPort(){
   const chips=(arr,key)=>arr.map(([k,l])=>`<button data-pp="${key}|${k}" class="${S[key]===k?'on':''}">${l}</button>`).join('');
   $('#ptc').innerHTML=`<div class="fg"><span class="k">Estilo</span>${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo']],'pv')}</div>
    <div class="fg"><span class="k">Agrupar</span>${chips(PG,'pg')}</div>${S.pv==='mos'?`<div class="fg"><span class="k">Color</span>${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div>`:''}
-   <div class="note" style="margin:0 0 10px">${items.length} posiciones · ${fh(tot,0)} € · toca una para ver sus lotes y dividendos</div><div id="ptv"></div>`;
+   <div id="ptv"></div>`;
   document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
   ({mos:vMos,tar:vTar,bar:vBar,ren:vRen,ani:vAni})[S.pv](items,tot);
   document.querySelectorAll('#ptv [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
