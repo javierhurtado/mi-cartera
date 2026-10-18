@@ -535,7 +535,7 @@ function openDetail(t){
 const PERS=[['all','Inicio'],['ytd','YTD'],['1y','1 año'],['3y','3 años'],['5y','5 años']];
 function renderRent(){
   const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);
-  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Primera compra${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}">Rendimiento · ${SERR[0].d.slice(8)}/${SERR[0].d.slice(5,7)}/${SERR[0].d.slice(2,4)}</button>`:'');
+  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Desde inicio${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}" title="Desde ${SERR[0].d}">Registrado</button>`:'');
   $('#per').style.display='block';
   $('#per').innerHTML=`<div class="oneline">${srcB}</div><div class="oneline">`+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('')+'</div>';
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p;renderRent()});
