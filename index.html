@@ -719,21 +719,15 @@ function vBar(items,tot){
 function vRen(items,tot){
   const dvT={};D.divs.filter(x=>vis(x.t)).forEach(x=>dvT[x.t]=(dvT[x.t]||0)+x.gross);
   items.forEach(i=>{i.rev=i.pyg||0;i.dv=dvT[i.t]||0;i.tr=i.rev+i.dv;i.trp=i.cost>0?i.tr/i.cost:NaN});
-  const C1=PAL[0],C3=PAL[2],CU=PAL[1],CD=PAL[3],CR=r=>r<0?CD:CU;
-  const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,xmax=Math.max(1,...items.map(topV)),xmin=Math.min(0,...items.map(i=>i.rev));
-  const sR=items.reduce((a,i)=>a+i.rev,0),sD=items.reduce((a,i)=>a+i.dv,0),sC=items.reduce((a,i)=>a+(i.cost||0),0);
-  const W=Math.max(300,Math.min(640,$('#ptv').clientWidth||360)),mL=64,mR=HIDE?8:62,rh=22,sx=v=>mL+(v-xmin)/(xmax-xmin)*(W-mL-mR);
-  const chart=list=>{const H=list.length*rh+6;let g='';
-    list.forEach((i,k)=>{const y=k*rh+3,h=rh-8,c=i.cost||0,r=i.rev,d=i.dv,rect=(a,b,col)=>b-a>0.0001?`<rect x="${sx(a).toFixed(1)}" y="${y+2}" width="${(sx(b)-sx(a)).toFixed(1)}" height="${h}" fill="${col}"/>`:'';
-      g+=`<g data-hi="${i.t}" data-pos="${i.t}" style="cursor:pointer"><rect x="0" y="${y-2}" width="${W}" height="${rh-2}" fill="transparent"/><text x="${mL-6}" y="${y+h/2+6}" font-size="11" text-anchor="end" fill="var(--tx)">${i.t}</text>`;
-      if(r>=0){g+=rect(0,c,C1)+rect(c,c+r,CR(r))+rect(c+r,c+r+d,C3)}else{g+=rect(r,0,CR(r))+rect(0,c,C1)+rect(c,c+d,C3)}
-      if(!HIDE)g+=`<text x="${(sx(topV(i))+4).toFixed(1)}" y="${y+h/2+6}" font-size="10" fill="var(--mu)">${i.trp>=0?'+':''}${fm(i.trp*100,1)} %</text>`;
-      g+='</g>'});
-    if(xmin<0)g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="0" y2="${H}" stroke="var(--mu)"/>`;
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}</svg>`};
+  const C1=PAL[0],CU=PAL[1],C3=PAL[2],CD=PAL[3];
+  const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,xmax=Math.max(1,...items.map(topV)),xmin=Math.min(0,...items.map(i=>i.rev)),span=xmax-xmin,p=v=>((v-xmin)/span*100).toFixed(2)+'%',w=(a,b)=>(Math.max(b-a,0)/span*100).toFixed(2)+'%';
+  const seg=(a,b,c)=>b>a?`<i style="position:absolute;top:0;left:${p(a)};width:${w(a,b)};background:${c}"></i>`:'';
+  const row=i=>{const c=i.cost||0,r=i.rev,d=i.dv;
+    const bar=(r>=0?seg(0,c,C1)+seg(c,c+r,CU)+seg(c+r,c+r+d,C3):seg(r,0,CD)+seg(0,c,C1)+seg(c,c+d,C3));
+    return `<div class="rowp" data-pos="${i.t}" data-hi="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk" style="position:relative;overflow:hidden">${bar}</span><span class="${cl(i.tr)}" style="width:64px;text-align:right"><b>${isFinite(i.trp)?(i.trp>=0?'+':'')+fm(i.trp*100,1)+' %':'–'}</b></span><span class="k" style="width:64px;text-align:right">${HIDE?'•••':fh(i.tr,0)+' €'}</span></div>`};
   const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>topV(b)-topV(a))}));
-  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 8px;flex-wrap:nowrap;gap:8px;font-size:11px;white-space:nowrap"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:${CU}"></i>Revalor.</span><span><i style="background:${CD}"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
-   +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+chart(g.items)).join('');
+  $('#ptv').innerHTML=`<div class="leg" style="margin:12px 0 16px;gap:10px 14px"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:${CU}"></i>Revalorización</span><span><i style="background:${CD}"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
+   +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+g.items.map(row).join('')).join('');
   bindTip('#ptv','[data-hi]',el=>{const i=items.find(x=>x.t===el.dataset.hi);return `<b>${i.t}</b><br>Coste ${fm(i.cost||0,0)} €<br>Revalorización ${fm(i.rev,0)} €<br>Dividendos ${fm(i.dv,0)} €<br>Total ${fm(i.tr,0)} € (${pc(i.trp)})`});
 }
 function vAni(items,tot){
