@@ -27,7 +27,7 @@ h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
-.nl{display:none}@media(max-width:760px){.nf{display:none}.nl{display:inline}nav{gap:4px}nav button{padding:7px 9px;font-size:14px}}
+.nl{display:none}@media(max-width:760px){.nf{display:none}.nl{display:inline}nav{gap:4px}nav button{flex:1 1 auto;padding:7px 4px;font-size:14px;text-align:center}}
 button{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 13px;cursor:pointer;font:inherit}
 button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
@@ -79,7 +79,8 @@ input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border
 .hbr:hover,.rowp:hover,.pc2:hover{background:rgba(127,127,127,.1)}.hbr{border-radius:6px;padding:1px 4px}
 html,body{overscroll-behavior-y:none}
 #sbar{position:fixed;top:0;left:0;width:100%;height:max(env(safe-area-inset-top,0px),8px);background:var(--bg);z-index:25}
-#ptr{position:fixed;left:50%;top:calc(max(env(safe-area-inset-top,0px),8px) - 6px);width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;opacity:0;z-index:26;pointer-events:none;transform:translate(-50%,0);color:var(--tx);box-shadow:0 4px 14px rgba(0,0,0,.3)}#ptr svg{display:block}#ptr.sp svg{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}\n#gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
+#rf svg.spin{animation:rfs .8s linear infinite}@keyframes rfs{to{transform:rotate(360deg)}}
+#gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
 .cw{position:relative}.cw svg{touch-action:pan-y;display:block}
@@ -104,11 +105,11 @@ svg text{font-family:inherit}
 .leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
 </style></head><body><main>
-<div class="top"><h1>📈 Mi Cartera</h1><div class="row"><button id="rf" class="ib" title="Actualizar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
+<div class="top"><h1>📈 Cartera</h1><div class="row"><button id="rf" class="ib" title="Actualizar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
 <div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>
 <div id="msg" class="card">Cargando datos de tu hoja…</div>
 <div id="app" class="hide">
-<nav id="nav"><button data-t="pos" class="on">Cartera</button><button data-t="pt"><span class="nf">Composición</span><span class="nl">Compos.</span></button><button data-t="rent"><span class="nf">Rentabilidad</span><span class="nl">Rentab.</span></button><button data-t="dv"><span class="nf">Dividendos</span><span class="nl">Divid.</span></button><button data-t="gr"><span class="nf">Gráficos</span><span class="nl">Gráf.</span></button></nav>
+<nav id="nav"><button data-t="pos" class="on">Cartera</button><button data-t="pt"><span class="nf">Composición</span><span class="nl">Compos.</span></button><button data-t="rent"><span class="nf">Rentabilidad</span><span class="nl">Rentab.</span></button><button data-t="dv"><span class="nf">Dividendos</span><span class="nl">Divid.</span></button><button data-t="gr"><span class="nf">Gráficos</span><span class="nl">Gráficos</span></button></nav>
 
 <section id="pos"><div class="card" id="kp"></div><div class="card" id="pf"></div><div class="card sc"><table id="tp"></table></div></section>
 
@@ -139,7 +140,7 @@ svg text{font-family:inherit}
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
 <div id="ft"><span class="note" id="meta"></span></div>
-<div id="sbar"></div><div id="ptr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div><div id="gtt" class="tt hide"></div>
+<div id="sbar"></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
@@ -168,7 +169,7 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
   return async(...args)=>{
     let served=false;
     try{
-      if(name==='loadAll'){const c=await idb.get('data');if(c){served=true;ok&&ok(c)}}
+      if(name==='loadAll'&&!window.__PTR){const c=await idb.get('data');if(c){served=true;ok&&ok(c)}}
       if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       if(name==='loadTvLogos'){const c=await idb.get('tv');if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       const t=await apiCall(name,args);
@@ -239,10 +240,10 @@ function fetchTv(){
 }
 
 /* ---------- carga ---------- */
-function load(){
-  $('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…';
+function load(done){
+  if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
   const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
-  const fail=m=>{clearTimeout(slow);$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
+  const fail=m=>{clearTimeout(slow);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
   google.script.run.withSuccessHandler(r=>{
     clearTimeout(slow);
     try{
@@ -252,6 +253,7 @@ function load(){
       META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();$('#dn').textContent=D.divNeto;
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
+      if(done)done();
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll();
 }
@@ -766,25 +768,26 @@ $('#cs').onclick=()=>{CFG.url=$('#cu').value.trim();CFG.key=$('#ck').value.trim(
   try{localStorage.setItem('mc_url',CFG.url);localStorage.setItem('mc_key',CFG.key)}catch(e){}
   $('#cfgscr').classList.add('hide');LGSTART=false;load()};
 $('#cc').onclick=async()=>{await idb.clear();$('#ce').textContent='Caché borrada.'};
-$('#rf').onclick=()=>{if(!CFG.url||!CFG.key)showCfg();else load()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=2').catch(()=>{});
 if(!CFG.url||!CFG.key)showCfg();else load();
 (function(){
-  const ind=document.getElementById('ptr');if(!ind)return;
-  let y0=0,x0=0,dy=0,act=false,busy=false;
+  const rf=document.getElementById('rf');if(!rf)return;
+  const svg=rf.querySelector('svg');let y0=0,x0=0,dy=0,act=false,busy=false;
   const top=()=>(document.scrollingElement||document.documentElement).scrollTop<=0;
   const blocked=()=>[...document.querySelectorAll('.ov')].some(o=>!o.classList.contains('hide'));
-  const rest=()=>{ind.style.transition='transform .2s,opacity .2s';ind.style.opacity=0;ind.style.transform='translate(-50%,0)'};
+  const rot=d=>{svg.style.transition=d==null?'transform .25s':'none';svg.style.transform=d==null?'':'rotate('+d+'deg)'};
+  window.refreshData=()=>{if(busy)return;
+    if(!CFG.url||!CFG.key){showCfg();return}
+    busy=true;window.__PTR=true;rot(null);svg.classList.add('spin');const t0=Date.now();
+    const fin=()=>{setTimeout(()=>{window.__PTR=false;svg.classList.remove('spin');busy=false},Math.max(0,800-(Date.now()-t0)))};
+    const safety=setTimeout(fin,45000);load(()=>{clearTimeout(safety);fin()})};
+  rf.onclick=window.refreshData;
   addEventListener('touchstart',e=>{if(busy||e.touches.length!==1||blocked()||!top()){act=false;return}
-    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true;ind.style.transition='none'},{passive:true});
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true},{passive:true});
   addEventListener('touchmove',e=>{if(!act)return;const t=e.touches[0];dy=t.clientY-y0;
-    if(Math.abs(t.clientX-x0)>Math.abs(dy)||dy<=0){if(dy<=0&&Math.abs(t.clientX-x0)<=Math.abs(dy)){ind.style.opacity=0}else act=false;return}
-    const d=Math.min(dy,130)*.55;ind.style.opacity=Math.min(1,dy/80);ind.style.transform='translate(-50%,'+d+'px) rotate('+(dy*3)+'deg)'},{passive:true});
-  const end=()=>{if(!act)return;act=false;
-    if(dy>80){busy=true;ind.style.transition='transform .2s';ind.style.opacity=1;ind.style.transform='translate(-50%,44px)';ind.classList.add('sp');
-      if(!CFG.url||!CFG.key)showCfg();else load();
-      setTimeout(()=>{ind.classList.remove('sp');rest();busy=false},1600)}
-    else rest()};
+    if(Math.abs(t.clientX-x0)>Math.abs(dy)){act=false;rot(null);return}
+    if(dy>0)rot(Math.min(dy,160)*2.2)},{passive:true});
+  const end=()=>{if(!act)return;act=false;if(dy>90){rot(null);window.refreshData()}else rot(null)};
   addEventListener('touchend',end,{passive:true});addEventListener('touchcancel',end,{passive:true});
 })();
 
