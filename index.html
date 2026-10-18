@@ -801,7 +801,7 @@ function openSettings(){
   if(!D)return;
   const ps=[...D.positions].sort((a,b)=>String(a.t).localeCompare(b.t));
   $('#stc').innerHTML=`<div class="dh"><b style="font-size:17px">⚙ Ajustes</b><button id="sx">✕ Cerrar</button></div>
-  <div class="row" style="margin:12px 0"><button id="s-eye" class="ib ${HIDE?'on':''}">${eyeSvg(false)} Ocultar importes (solo %)</button><button id="s-conn">🔌 Conexión</button></div>
+  <div class="row" style="margin:12px 0;flex-wrap:nowrap"><button id="s-eye" class="ib ${HIDE?'on':''}" style="white-space:nowrap">${eyeSvg(false)} Ocultar importes</button><button id="s-conn" style="white-space:nowrap">🔌 Conexión</button></div>
   <div class="fg" style="margin-bottom:8px"><span class="k">Tema</span><button data-th="" class="${!THEME?'on':''}">Automático</button><button data-th="light" class="${THEME==='light'?'on':''}">Claro</button><button data-th="dark" class="${THEME==='dark'?'on':''}">Oscuro</button></div>
   <h2>Posiciones visibles <button id="vinfo" class="inf" aria-label="Información">i</button></h2>
   <div class="note hide" id="vnote" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
