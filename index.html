@@ -123,7 +123,7 @@ svg text{font-family:inherit}
  <div class="card"><h2>Valor de la cartera vs. aportación neta</h2><div id="ch2" class="sc"></div></div>
  <div class="card" id="hs"></div>
  <div class="card note" style="font-size:13px"><b>Cómo se calcula</b><br>
- <b>MWR</b> (TIR/XIRR anualizada, en €): compras = salidas; ventas y dividendos netos (<span id="dn"></span>) = entradas; valor final = valor de mercado de Cartera. En un periodo parcial, el valor inicial cuenta como una salida el primer día.<br>
+ <b>MWR</b> (TIR/XIRR anualizada, en €): compras = salidas; ventas y dividendos brutos = entradas; valor final = valor de mercado de Cartera. En un periodo parcial, el valor inicial cuenta como una salida el primer día.<br>
  <b>TWR</b>: se valora la cartera cada semana y en cada fecha de operación con precios históricos de GOOGLEFINANCE (convertidos a € con el cambio de esa semana). Si un ticker no tiene histórico, se usa el último precio operado. En los días de operación se valora con el precio real de la operación. Los dividendos suman al rendimiento. No incluye primas de opciones.</div>
 </section>
 
@@ -252,7 +252,7 @@ function load(done){
       if(!r)throw new Error('El servidor no devolvió datos.');
       D=typeof r==='string'?JSON.parse(r):r;EMP={};D.emp.forEach(e=>EMP[e.t]=e);
       $('#msg').classList.add('hide');$('#app').classList.remove('hide');
-      META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();$('#dn').textContent=D.divNeto;
+      META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
@@ -286,7 +286,7 @@ function buildSeries(){
     if(l.flujoC)FL.push({d:l.fc,a:-l.eur});
     if(l.fv){const cash=!tras.has(l.t+'|'+l.fv);ev.push({d:l.fv,t:l.t,q:l.q,p:l.eurV/l.q,s:-1,inv:cash?-l.eurV:0});if(cash)FL.push({d:l.fv,a:l.eurV})}
   });
-  D.divs.forEach(x=>{if(!isFinite(x.net)||x.net==null)return;ev.push({d:x.f,div:x.net,isDiv:true});FL.push({d:x.f,a:x.net})});
+  D.divs.forEach(x=>{if(!isFinite(x.gross)||x.gross==null)return;ev.push({d:x.f,div:x.gross,isDiv:true});FL.push({d:x.f,a:x.gross})});
   ev.sort((a,b)=>a.d.localeCompare(b.d));
   const first=ev.length?ev[0].d:D.today,set=new Set(ev.map(e=>e.d));set.add(D.today);
   if(H){Object.values(H.px).forEach(o=>o.pts.forEach(p=>set.add(p[0])));Object.values(H.fx).forEach(a=>a.forEach(p=>set.add(p[0])))}
@@ -511,13 +511,13 @@ function lotDetail(t){
   const divs=D.divs.filter(x=>x.t===t).sort((a,b)=>a.f.localeCompare(b.f)),orph=[];
   divs.forEach(x=>{
     const live=lots.filter(l=>l.fc<=x.f&&(!l.fv||l.fv>x.f)),q=live.reduce((s,l)=>s+l.q,0);
-    if(q>0)live.forEach(l=>{l.div+=x.net*l.q/q;l.n++});else orph.push(x);
+    if(q>0)live.forEach(l=>{l.div+=x.gross*l.q/q;l.n++});else orph.push(x);
   });
   return{lots,divs,orph};
 }
 function openDetail(t){
   const p=D.positions.find(x=>x.t===t)||{},e=EMP[t]||{},d=lotDetail(t),open=d.lots.filter(l=>!l.fv);
-  const dTot=d.divs.reduce((s,x)=>s+x.net,0),cOpen=open.reduce((s,l)=>s+l.eur,0),qOpen=open.reduce((s,l)=>s+l.q,0),yp=p.q>0?p.val/p.q:NaN;
+  const dTot=d.divs.reduce((s,x)=>s+x.gross,0),cOpen=open.reduce((s,l)=>s+l.eur,0),qOpen=open.reduce((s,l)=>s+l.q,0),yp=p.q>0?p.val/p.q:NaN;
   const yld=(e.divAnual>0&&yp>0)?e.divAnual/yp*100:NaN,yoc=(e.divAnual>0&&qOpen>0&&cOpen>0)?e.divAnual/(cOpen/qOpen)*100:NaN;
   const pxE=p.px?p.px*fxNow(p.ccy):NaN;
   const rows=d.lots.map(l=>{
@@ -527,7 +527,7 @@ function openDetail(t){
   <div class="grid" style="margin:10px 0">${[['Posición',fh(p.q||0,0)],['PMC',fm(p.pmc)],['Valor €',fh(p.val)],['PyG €',`<span class="${cl(p.pyg)}">${fh(p.pyg)}</span>`],['Dividendos cobrados',fh(dTot)],['Yield actual',fm(yld)+' %'],['YOC',fm(yoc)+' %'],['YOC cobrado (histórico)',fm(cOpen?dTot/cOpen*100:NaN)+' %']].map(([k,v])=>kpi(k,v)).join('')}</div>
   <h2>Lotes de compra</h2><div class="sc"><table style="min-width:820px"><tr><th>Compra</th><th>Tipo</th><th>Acc.</th><th>Precio €</th><th>Coste €</th><th>Venta</th><th>Venta €</th><th>PyG €</th><th>Div. asignado €</th><th>% s/ coste</th></tr>${rows||'<tr><td colspan="10">Sin lotes en Oper.</td></tr>'}</table></div>
   <div class="note">El PyG de lotes abiertos usa el precio actual de Cartera (aprox. si la divisa no es €). El dividendo de cada cobro se reparte entre los lotes vivos ese día, proporcional a sus acciones.</div>
-  <h2 style="margin-top:14px">Dividendos cobrados por año</h2><div class="sc"><table style="min-width:300px"><tr><th>Año</th><th>Cobros</th><th>Neto €</th></tr>${Object.entries(d.divs.reduce((m,x)=>{const y=x.f.slice(0,4);(m[y]=m[y]||{n:0,s:0}).n++;m[y].s+=x.net;return m},{})).sort().reverse().map(([y,o])=>`<tr><td>${y}</td><td>${o.n}</td><td>${fh(o.s)}</td></tr>`).join('')||'<tr><td colspan="3">–</td></tr>'}</table></div>
+  <h2 style="margin-top:14px">Dividendos cobrados por año</h2><div class="sc"><table style="min-width:300px"><tr><th>Año</th><th>Cobros</th><th>Bruto €</th></tr>${Object.entries(d.divs.reduce((m,x)=>{const y=x.f.slice(0,4);(m[y]=m[y]||{n:0,s:0}).n++;m[y].s+=x.gross;return m},{})).sort().reverse().map(([y,o])=>`<tr><td>${y}</td><td>${o.n}</td><td>${fh(o.s)}</td></tr>`).join('')||'<tr><td colspan="3">–</td></tr>'}</table></div>
   <h2 style="margin-top:14px">Dividendos cobrados (${d.divs.length})</h2><div class="sc"><table style="min-width:360px"><tr><th>Fecha</th><th>Bruto €</th><th>Neto €</th></tr>${d.divs.slice().reverse().map(x=>`<tr><td>${x.f}</td><td>${fh(x.gross)}</td><td>${fh(x.net)}</td></tr>`).join('')||'<tr><td colspan="3">Sin dividendos registrados</td></tr>'}</table></div>
   ${d.orph.length?`<div class="note fc">${d.orph.length} cobro(s) sin lote vivo en esa fecha (¿cambio de ticker o lote sin registrar?): ${d.orph.map(x=>x.f).join(', ')}</div>`:''}`;
   $('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
@@ -567,14 +567,14 @@ function projPer(e){
   const lim=new Date(D.today);lim.setDate(lim.getDate()-400);const ls=lim.toISOString().slice(0,10);
   const slot=Array(12).fill(null);
   D.divs.filter(x=>x.t===e.t&&x.f>=ls).forEach(x=>{const m=+x.f.slice(5,7)-1,q=sharesAt(e.t,x.f);if(!(q>0))return;
-    const ym=x.f.slice(0,7),ps=x.net/q;
+    const ym=x.f.slice(0,7),ps=x.gross/q;
     if(!slot[m]||ym>slot[m].ym)slot[m]={ym,ps};else if(ym===slot[m].ym)slot[m].ps+=ps});
   const out=slot.map(x=>x?x.ps:0);
   if(e.nextDiv>0&&e.nextDate){const m=+e.nextDate.slice(5,7)-1;out[m]=e.nextDiv}
   return PMC.m[e.t]=out}
 const pmv=(e,Y,cy,m)=>Y>cy?projPer(e)[m]:e.months[m];
 function divModel(){
-  const rec={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=+x.f.slice(0,4),m=+x.f.slice(5,7)-1;((rec[y]=rec[y]||[])[m]=(rec[y][m]||[])).push({t:x.t,d:x.f,a:x.net})});
+  const rec={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=+x.f.slice(0,4),m=+x.f.slice(5,7)-1;((rec[y]=rec[y]||[])[m]=(rec[y][m]||[])).push({t:x.t,d:x.f,a:x.gross})});
   return rec;
 }
 function centerYears(){['#yrs','#yrs2'].forEach(id=>{const c=$(id),b=c&&c.querySelector('.on');if(b&&c.clientWidth)c.scrollLeft=b.offsetLeft-(c.clientWidth-b.offsetWidth)/2})}
@@ -603,7 +603,7 @@ function renderDiv(){
     $('#dsum').innerHTML='<tr><th>Año</th><th>Total</th><th>Media/mes</th><th>Media/día</th><th>Cobros</th><th>Δ año ant.</th></tr>'+
       rows.slice().reverse().map(r=>`<tr class="${r.y===S.year?'sold':''}"><td><b>${r.y}</b>${r.y===cy?' <span class="k">YTD</span>':''}</td><td>${fh(r.tot,0)} €</td><td>${fh(r.mo,0)} €</td><td>${fh(r.da,2)} €</td><td>${r.n}</td><td class="${r.y===cy||!tots[r.y-1]?'':cl(r.tot-tots[r.y-1])}">${r.y===cy||!tots[r.y-1]?'–':pc(r.tot/tots[r.y-1]-1)}</td></tr>`).join('');
   })();
-  const l12=D.divs.filter(x=>vis(x.t)&&x.f>(new Date(Date.UTC(cy-1,cm,+D.today.slice(8)))).toISOString().slice(0,10)).reduce((s,x)=>s+x.net,0);
+  const l12=D.divs.filter(x=>vis(x.t)&&x.f>(new Date(Date.UTC(cy-1,cm,+D.today.slice(8)))).toISOString().slice(0,10)).reduce((s,x)=>s+x.gross,0);
   const ann=Y>=cy?totR+totF:totR,tvv=D.totals.valor,tc=D.totals.coste;
   $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual'+(Y>=cy?' estimado':''),fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
   const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,3);
@@ -614,10 +614,10 @@ function renderCharts(){
   const rec=divModel(),got=[],fc=[];
   for(let m=0;m<12;m++){const g=((rec[Y]||[])[m]||[]);got.push(g.reduce((s,x)=>s+x.a,0));
     let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{const v=pmv(e,Y,cy,m);if(v>0&&!g.some(x=>x.t===e.t))f+=v*e.acc});fc.push(f)}
-  const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.net});const yl=[...new Set([...Object.keys(yrs),String(cy),String(cy+1)])].sort();
+  const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.gross});const yl=[...new Set([...Object.keys(yrs),String(cy),String(cy+1)])].sort();
   const projByT=Y=>{const out={};if(Y<cy)return out;held.forEach(e=>{for(let m=0;m<12;m++){if(Y===cy&&m<cm)continue;if(((rec[Y]||[])[m]||[]).some(x=>x.t===e.t))continue;const v=pmv(e,Y,cy,m)*e.acc;if(v>0)out[e.t]=(out[e.t]||0)+v}});return out};
   const projTot=Y=>Object.values(projByT(Y)).reduce((a,b)=>a+b,0);
-  const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
+  const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.gross);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
   $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
@@ -626,7 +626,7 @@ function renderCharts(){
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
   CLK['#a1']=i=>{const g=((rec[Y]&&rec[Y][i])||[]),rows=g.map(x=>({t:x.t,sub:fdate(x.d),val:x.a}));
     if(Y>cy||(Y===cy&&i>=cm))held.forEach(e=>{const v=pmv(e,Y,cy,i)*e.acc;if(v>0&&!g.some(x=>x.t===e.t))rows.push({t:e.t,fc:true,val:v})});showList('Dividendos '+MES[i]+' '+Y,rows)};
-  CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);const pj=projByT(+y);
+  CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.gross);const pj=projByT(+y);
     showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})).concat(Object.entries(pj).map(([t,v])=>({t,fc:true,val:v}))))};
   const optTrades=(t,tt,f)=>showList(tt,OP.filter(o=>o.t===t&&f(o)).sort((a,b)=>b.f.localeCompare(a.f)).map(o=>({t:o.t,nopos:true,label:o.sym||(o.t+' '+o.tipo+(isFinite(o.k)?' '+o.k:'')),sub:(o.sym?'':'')+o.tipo+(isFinite(o.k)&&o.sym?' · strike '+fm(o.k,o.k%1?2:0):'')+' · venc. '+fdate(o.f),val:o.pyg})));
   const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,op:true,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})));
@@ -717,26 +717,25 @@ function vBar(items,tot){
   $('#ptv').innerHTML=groupsOf(items).map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} %</span></h2>`:'')+g.items.map((i,k)=>`<div class="rowp" data-pos="${i.t}">${logo(i.t)}<span class="nmx"><b>${i.t}</b></span><span class="trk"><i style="width:${i.v/mx*100}%;background:${PAL[0]}"></i></span><span style="width:54px;text-align:right"><b>${fm(i.v/tot*100,1)} %</b></span><span class="k" style="width:64px;text-align:right">${fh(i.v,0)} €</span></div>`).join('')).join('');
 }
 function vRen(items,tot){
-  const dvT={};D.divs.filter(x=>vis(x.t)).forEach(x=>dvT[x.t]=(dvT[x.t]||0)+x.net);
+  const dvT={};D.divs.filter(x=>vis(x.t)).forEach(x=>dvT[x.t]=(dvT[x.t]||0)+x.gross);
   items.forEach(i=>{i.rev=i.pyg||0;i.dv=dvT[i.t]||0;i.tr=i.rev+i.dv;i.trp=i.cost>0?i.tr/i.cost:NaN});
-  const C1='#4fb3bf',C2='#e0796b',C3='#f2b93b';
-  const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,ymax=Math.max(1,...items.map(topV)),ymin=Math.min(0,...items.map(i=>Math.min(i.rev,0)));
-  const raw=(ymax-ymin)/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,2.5,5,10].map(k=>k*mag).find(v=>v>=raw),tk=[];
-  for(let v=Math.ceil(ymin/step)*step;v<=ymax+1e-9;v+=step)tk.push(v);
-  const H=280,mT=10,mB=50,mL=HIDE?6:46,avail=($('#ptv').clientWidth||360),sy=v=>mT+(ymax-v)/(ymax-ymin)*(H-mT-mB);
+  const C1=PAL[0],C3=PAL[4],CR=r=>r<0?'var(--dn)':'var(--up)';
+  const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,xmax=Math.max(1,...items.map(topV)),xmin=Math.min(0,...items.map(i=>i.rev));
   const sR=items.reduce((a,i)=>a+i.rev,0),sD=items.reduce((a,i)=>a+i.dv,0),sC=items.reduce((a,i)=>a+(i.cost||0),0);
-  const chart=list=>{const n=list.length,cw=Math.max(22,Math.min(44,(avail-mL-8)/n)),W=mL+n*cw+8;let g='';
-    tk.forEach(v=>{g+=`<line x1="${mL}" x2="${W-4}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/>`+(HIDE?'':`<text x="${mL-5}" y="${sy(v)+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fm(v,0)}</text>`)});
-    g+=`<line x1="${mL}" x2="${W-4}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--mu)"/>`;
-    list.forEach((i,k)=>{const x=mL+k*cw+cw*.14,w=cw*.72,c=i.cost||0,r=i.rev,d=i.dv,rect=(a,b,col)=>b-a>0.0001?`<rect x="${x.toFixed(1)}" y="${sy(b).toFixed(1)}" width="${w.toFixed(1)}" height="${(sy(a)-sy(b)).toFixed(1)}" fill="${col}"/>`:'';
-      g+=rect(0,c,C1);if(r>=0){g+=rect(c,c+r,C2);g+=rect(c+r,c+r+d,C3)}else{g+=`<rect x="${x.toFixed(1)}" y="${sy(0).toFixed(1)}" width="${w.toFixed(1)}" height="${(sy(r)-sy(0)).toFixed(1)}" fill="${C2}"/>`;g+=rect(c,c+d,C3)}
-      g+=`<text transform="translate(${(x+w/2+3).toFixed(1)},${H-mB+6}) rotate(-90)" font-size="10" text-anchor="end" fill="var(--mu)">${i.t}</text>`;
-      g+=`<rect data-pos="${i.t}" x="${(mL+k*cw).toFixed(1)}" y="${mT}" width="${cw.toFixed(1)}" height="${H-mT}" fill="transparent" style="cursor:pointer"/>`});
-    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="display:block;max-width:none">${g}</svg></div>`};
+  const W=Math.max(300,Math.min(640,$('#ptv').clientWidth||360)),mL=64,mR=HIDE?8:62,rh=22,sx=v=>mL+(v-xmin)/(xmax-xmin)*(W-mL-mR);
+  const chart=list=>{const H=list.length*rh+6;let g='';
+    list.forEach((i,k)=>{const y=k*rh+3,h=rh-8,c=i.cost||0,r=i.rev,d=i.dv,rect=(a,b,col)=>b-a>0.0001?`<rect x="${sx(a).toFixed(1)}" y="${y+2}" width="${(sx(b)-sx(a)).toFixed(1)}" height="${h}" fill="${col}"/>`:'';
+      g+=`<g data-hi="${i.t}" data-pos="${i.t}" style="cursor:pointer"><rect x="0" y="${y-2}" width="${W}" height="${rh-2}" fill="transparent"/><text x="${mL-6}" y="${y+h/2+6}" font-size="11" text-anchor="end" fill="var(--tx)">${i.t}</text>`;
+      if(r>=0){g+=rect(0,c,C1)+rect(c,c+r,CR(r))+rect(c+r,c+r+d,C3)}else{g+=rect(r,0,CR(r))+rect(0,c,C1)+rect(c,c+d,C3)}
+      if(!HIDE)g+=`<text x="${(sx(topV(i))+4).toFixed(1)}" y="${y+h/2+6}" font-size="10" fill="var(--mu)">${i.trp>=0?'+':''}${fm(i.trp*100,1)} %</text>`;
+      g+='</g>'});
+    if(xmin<0)g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="0" y2="${H}" stroke="var(--mu)"/>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}</svg>`};
   const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>topV(b)-topV(a))}));
-  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 6px"><span><i style="background:${C3}"></i>Div. total (€)</span><span><i style="background:${C2}"></i>Rendimiento (€)</span><span><i style="background:${C1}"></i>Coste (€)</span></div>
+  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 6px"><span><i style="background:${C1}"></i>Coste (€)</span><span><i style="background:var(--up)"></i>Revalorización (€)</span><span><i style="background:var(--dn)"></i>Pérdida (€)</span><span><i style="background:${C3}"></i>Dividendos brutos (€)</span></div>
    <div class="note" style="margin:0 0 8px">Rentabilidad sobre coste: <b class="${cl(sR+sD)}">${pc(sC?(sR+sD)/sC:NaN)}</b>${HIDE?'':' · rendimiento <b class="'+cl(sR)+'">'+fm(sR,0)+' €</b> · dividendos <b>'+fm(sD,0)+' €</b>'}</div>`
    +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+chart(g.items)).join('');
+  bindTip('#ptv','[data-hi]',el=>{const i=items.find(x=>x.t===el.dataset.hi);return `<b>${i.t}</b><br>Coste ${fm(i.cost||0,0)} €<br>Revalorización ${fm(i.rev,0)} €<br>Dividendos ${fm(i.dv,0)} €<br>Total ${fm(i.tr,0)} € (${pc(i.trp)})`});
 }
 function vAni(items,tot){
   let sl;
