@@ -358,7 +358,7 @@ function bindPos(root){document.querySelectorAll(root+' [data-pos]').forEach(r=>
 function showList(title,rows){
   const tot=rows.reduce((s,r)=>s+r.val,0);rows.sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
   $('#dtc').innerHTML=`<div class="dh"><b style="font-size:17px">${title}</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:6px 0 10px">${rows.length} elementos · Total <b class="${cl(tot)}">${HIDE?'•••':fm(tot)+' €'}</b></div>`+
-  (rows.length?rows.map(r=>{const k=D.positions.some(p=>p.t===r.t);return `<div class="rowp" ${k?`data-pos="${r.t}"`:'style="cursor:default"'}>${r.t?logo(r.t):''}<span class="nmx" style="flex:1;width:auto"><b>${r.t||r.label}</b> <span class="k">${r.sub||''}</span></span><b class="${cl(r.val)}">${HIDE?'•••':fm(r.val)+' €'}</b></div>`}).join(''):'<div class="note">Sin datos.</div>');
+  (rows.length?rows.map(r=>{const k=!r.op&&!r.nopos&&D.positions.some(p=>p.t===r.t);return `<div class="rowp" ${k?`data-pos="${r.t}"`:r.op?`data-op="${r.t}" style="cursor:pointer"`:'style="cursor:default"'}>${r.t?logo(r.t):''}<span class="nmx" style="flex:1;width:auto"><b>${r.label||r.t}</b> <span class="k">${r.sub||''}</span></span><b class="${cl(r.val)}">${HIDE?'•••':fm(r.val)+' €'}</b></div>`}).join(''):'<div class="note">Sin datos.</div>');
   bindPos('#dtc');$('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
 }
 function showGroup(g){
@@ -620,7 +620,9 @@ function renderCharts(){
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
   CLK['#a1']=i=>showList('Dividendos '+MES[i]+' '+Y,((rec[Y]&&rec[Y][i])||[]).map(x=>({t:x.t,sub:fdate(x.d),val:x.a})));
   CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})))};
-  const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})))};
+  const optTrades=(t,tt,f)=>showList(tt,OP.filter(o=>o.t===t&&f(o)).sort((a,b)=>b.f.localeCompare(a.f)).map(o=>({t:o.t,nopos:true,label:o.sym||(o.t+' '+o.tipo+(isFinite(o.k)?' '+o.k:'')),sub:(o.sym?'':'')+o.tipo+(isFinite(o.k)&&o.sym?' · strike '+fm(o.k,o.k%1?2:0):'')+' · venc. '+fdate(o.f),val:o.pyg})));
+  const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,op:true,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})));
+    document.querySelectorAll('#dtc [data-op]').forEach(e=>e.onclick=()=>optTrades(e.dataset.op,e.dataset.op+' · '+tt,f))};
   const optBucket=o=>(o.f.slice(0,4)===String(Y)&&o.f<=D.today)?+o.f.slice(5,7)-1:12;
   CLK['#a12']=i=>optList('Opciones cerradas en '+oyl[i],o=>fyOf(o)===oyl[i]);
   reg('#a1',id=>bars(id,MES,[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
@@ -628,7 +630,8 @@ function renderCharts(){
   OP.forEach(o=>{const y=fyOf(o);oy[y]=(oy[y]||0)+o.pyg;if(y===String(Y)){ot[o.t]=(ot[o.t]||0)+o.pyg;om[optBucket(o)]+=o.pyg}});
   const otTot=Object.values(ot).reduce((a,b)=>a+b,0);
   const oyl=Object.keys(oy).sort();
-  reg('#a11',id=>hbars(id,Object.entries(ot).map(([t,v])=>({t:D.positions.some(p=>p.t===t)?t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10)));
+  reg('#a11',id=>{const it=Object.entries(ot).map(([t,v])=>({t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10);hbars(id,it);
+    document.querySelectorAll(id+' .hbr').forEach(el=>{const t=it[+el.dataset.hi].label;el.style.cursor='pointer';el.onclick=()=>optTrades(t,'Opciones '+t+' · '+Y,o=>fyOf(o)===String(Y))})});
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
   $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b></div>');
   reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
@@ -788,7 +791,8 @@ if(!CFG.url||!CFG.key)showCfg();else load();
   const run=()=>{if(!raf){last=performance.now();raf=requestAnimationFrame(tick)}};
   const start=()=>{if(busy)return;if(!CFG.url||!CFG.key){showCfg();return}
     busy=true;window.__PTR=true;dragging=false;tgt=HOLD;mode='spin';run();const t0=Date.now();
-    const fin=()=>setTimeout(()=>{window.__PTR=false;mode='stop';stopT=Math.ceil((ang+120)/360)*360;tgt=0;vo=-30;busy=false;run()},Math.max(0,900-(Date.now()-t0)));
+    setTimeout(()=>{tgt=0;vo=-30;run()},650);
+    const fin=()=>setTimeout(()=>{window.__PTR=false;mode='stop';stopT=Math.ceil((ang+120)/360)*360;busy=false;run()},Math.max(0,1000-(Date.now()-t0)));
     const safety=setTimeout(fin,45000);load(()=>{clearTimeout(safety);fin()})};
   window.refreshData=start;rf.onclick=start;
   addEventListener('touchstart',e=>{if(busy||e.touches.length!==1||blocked()||!top()){act=false;return}
