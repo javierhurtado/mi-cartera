@@ -75,6 +75,7 @@ input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border
 .dg circle{transition:opacity .12s}.dg:hover circle{opacity:.45}.dg circle:hover{opacity:1}
 .hbr:hover,.rowp:hover,.pc2:hover{background:rgba(127,127,127,.1)}.hbr{border-radius:6px;padding:1px 4px}
 html,body{overscroll-behavior-y:none}
+#sbar{position:fixed;top:0;left:0;width:100%;height:max(env(safe-area-inset-top,0px),8px);background:var(--bg);z-index:25}
 #gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
@@ -134,7 +135,7 @@ svg text{font-family:inherit}
 <div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
-<div id="gtt" class="tt hide"></div>
+<div id="sbar"></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
