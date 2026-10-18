@@ -732,8 +732,7 @@ function vRen(items,tot){
     if(xmin<0)g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="0" y2="${H}" stroke="var(--mu)"/>`;
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}</svg>`};
   const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>topV(b)-topV(a))}));
-  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 6px"><span><i style="background:${C1}"></i>Coste (€)</span><span><i style="background:var(--up)"></i>Revalorización (€)</span><span><i style="background:var(--dn)"></i>Pérdida (€)</span><span><i style="background:${C3}"></i>Dividendos brutos (€)</span></div>
-   <div class="note" style="margin:0 0 8px">Rentabilidad sobre coste: <b class="${cl(sR+sD)}">${pc(sC?(sR+sD)/sC:NaN)}</b>${HIDE?'':' · rendimiento <b class="'+cl(sR)+'">'+fm(sR,0)+' €</b> · dividendos <b>'+fm(sD,0)+' €</b>'}</div>`
+  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 8px;flex-wrap:nowrap;gap:8px;font-size:11px;white-space:nowrap"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:var(--up)"></i>Revalor.</span><span><i style="background:var(--dn)"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
    +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+chart(g.items)).join('');
   bindTip('#ptv','[data-hi]',el=>{const i=items.find(x=>x.t===el.dataset.hi);return `<b>${i.t}</b><br>Coste ${fm(i.cost||0,0)} €<br>Revalorización ${fm(i.rev,0)} €<br>Dividendos ${fm(i.dv,0)} €<br>Total ${fm(i.tr,0)} € (${pc(i.trp)})`});
 }
