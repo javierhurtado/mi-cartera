@@ -404,7 +404,7 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
 function hbars(id,items,fmt=n=>fh(n,0)){
   if(!items.length){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
   const max=Math.max(...items.map(x=>Math.abs(x.value)))||1;
-  $(id).innerHTML=items.map((x,i)=>`<div class="hbr" data-hi="${i}" ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.lg||x.t?logo(x.lg||x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
+  $(id).innerHTML=items.map((x,i)=>`<div class="hbr" data-hi="${i}" ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.lg||x.t?logo(x.lg||x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[1]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
   bindPos(id);
   bindTip(id,'.hbr',el=>{const x=items[+el.dataset.hi];return `<b>${x.label}</b><br>${fmt(x.value)}${HIDE?'':' €'}`});
 }
