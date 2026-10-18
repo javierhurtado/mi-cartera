@@ -340,7 +340,7 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
   el.addEventListener('pointerenter',e=>{if(e.pointerType==='touch')return;const h=fn(el);if(h)showTip(h,e)});
   el.addEventListener('pointermove',e=>{if(e.pointerType!=='touch')moveTip(e)});
   el.addEventListener('pointerleave',hideTip)})}
-if(typeof document.addEventListener==='function')document.addEventListener('scroll',hideTip,true);
+if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel)}
 function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML='';$('#xt').textContent=title;$('#xv').classList.remove('hide');
@@ -372,7 +372,7 @@ function tipHook(root,W,fn){
   svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
 }
 function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
-  W=WX||W;const H=WX?300:200,mL=44,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;const H=WX?300:200,mL=44,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
   const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
@@ -394,12 +394,12 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
 function hbars(id,items,fmt=n=>fh(n,0)){
   if(!items.length){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
   const max=Math.max(...items.map(x=>Math.abs(x.value)))||1;
-  $(id).innerHTML=items.map((x,i)=>`<div class="hbr" data-hi="${i}" ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.t?logo(x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
+  $(id).innerHTML=items.map((x,i)=>`<div class="hbr" data-hi="${i}" ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.lg||x.t?logo(x.lg||x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
   bindPos(id);
   bindTip(id,'.hbr',el=>{const x=items[+el.dataset.hi];return `<b>${x.label}</b><br>${fmt(x.value)}${HIDE?'':' €'}`});
 }
 function line(id,series,fmt=pc,W=640){
-  W=WX||W;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
   const H=WX?320:(W<500?200:230),m=W<500?44:52,xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
@@ -586,7 +586,7 @@ function renderCharts(){
   const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
-  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Opciones (PyG) por mes · '+Y,'a13'],['Dividendos por año','a2'],['Opciones (PyG) por año de cierre','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
+  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Dividendos por año','a2'],['Opciones (PyG) por año de cierre','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
   if(ser().length)document.querySelectorAll('.pp').forEach(el=>{el.innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
     el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})});
   document.querySelectorAll('.xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
@@ -594,17 +594,14 @@ function renderCharts(){
   CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})))};
   const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})))};
   const optBucket=o=>(o.f.slice(0,4)===String(Y)&&o.f<=D.today)?+o.f.slice(5,7)-1:12;
-  CLK['#a13']=i=>optList((i<12?'Opciones '+MES[i]+' '+Y:'Opciones cerradas antes del vencimiento · '+Y),o=>fyOf(o)===String(Y)&&optBucket(o)===i);
   CLK['#a12']=i=>optList('Opciones cerradas en '+oyl[i],o=>fyOf(o)===oyl[i]);
   reg('#a1',id=>bars(id,MES,[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
   const OP=(D.opc||[]).filter(o=>vis(o.t)),ot={},oy={},om=Array(13).fill(0);
   OP.forEach(o=>{const y=fyOf(o);oy[y]=(oy[y]||0)+o.pyg;if(y===String(Y)){ot[o.t]=(ot[o.t]||0)+o.pyg;om[optBucket(o)]+=o.pyg}});
   const otTot=Object.values(ot).reduce((a,b)=>a+b,0);
   const oyl=Object.keys(oy).sort();
-  reg('#a13',id=>bars(id,[...MES,'Antic.'],[{name:'PyG opciones',color:PAL[1],data:om}]));
-  reg('#a11',id=>hbars(id,Object.entries(ot).map(([t,v])=>({t:D.positions.some(p=>p.t===t)?t:'',label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10)));
+  reg('#a11',id=>hbars(id,Object.entries(ot).map(([t,v])=>({t:D.positions.some(p=>p.t===t)?t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10)));
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
-  $('#a13').insertAdjacentHTML('beforeend','<div class="note">Mes = vencimiento del contrato. «Antic.» = cerradas antes de vencer (o con vencimiento futuro): la hoja no guarda la fecha exacta de cierre, solo el ejercicio fiscal.</div>');
   $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b> · por ejercicio fiscal de cierre (contratos cerrados de la pestaña Opc.)</div>');
   reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
   reg('#a3',id=>hbars(id,topT));
