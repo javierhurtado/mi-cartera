@@ -538,7 +538,7 @@ const BMK=[['sp','S&P 500',PAL[1]],['ibex','IBEX 35',PAL[2]],['msci','MSCI World
 let BM=null,BMSEL=[],BMLOAD=false,BMERR='';
 function bmLoad(){
   if(BM||BMLOAD)return;BMLOAD=true;BMERR='';
-  google.script.run.withSuccessHandler(t=>{BMLOAD=false;try{const o=typeof t==='string'?JSON.parse(t):t;if(o.error)throw new Error(o.error);BM=o.bench||{};BMERR=(o.errors&&o.errors.length)?'Sin datos de: '+o.errors.join(', '):''}catch(e){BMERR='No se pudo cargar la comparativa: '+String(e.message||e).slice(0,80)}if($('#ch1')&&ser().length)drawTwr(perf(S.per))})
+  google.script.run.withSuccessHandler(t=>{BMLOAD=false;try{const o=typeof t==='string'?JSON.parse(t):t;if(o.error)throw new Error(o.error);BM=o.bench||{};BMERR=(o.errors&&o.errors.length)?'Sin datos de: '+o.errors.join(', '):''}catch(e){BMERR=/desconocida/i.test(String(e.message||e))?'Falta actualizar Code.gs en Apps Script y volver a desplegar (nueva versión).':'No se pudo cargar la comparativa: '+String(e.message||e).slice(0,80)}if($('#ch1')&&ser().length)drawTwr(perf(S.per))})
    .withFailureHandler(e=>{BMLOAD=false;BMERR='No se pudo cargar la comparativa: '+String((e&&e.message)||e).slice(0,80);if($('#ch1')&&ser().length)drawTwr(perf(S.per))}).loadBench();
 }
 function bmCurve(k,start){
