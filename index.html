@@ -760,6 +760,6 @@ $('#cs').onclick=()=>{CFG.url=$('#cu').value.trim();CFG.key=$('#ck').value.trim(
   $('#cfgscr').classList.add('hide');LGSTART=false;load()};
 $('#cc').onclick=async()=>{await idb.clear();$('#ce').textContent='Caché borrada.'};
 $('#rf').onclick=()=>{if(!CFG.url||!CFG.key)showCfg();else load()};
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=2').catch(()=>{});
 if(!CFG.url||!CFG.key)showCfg();else load();
 </script></main></body></html>
