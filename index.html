@@ -719,7 +719,7 @@ function vBar(items,tot){
 function vRen(items,tot){
   const dvT={};D.divs.filter(x=>vis(x.t)).forEach(x=>dvT[x.t]=(dvT[x.t]||0)+x.gross);
   items.forEach(i=>{i.rev=i.pyg||0;i.dv=dvT[i.t]||0;i.tr=i.rev+i.dv;i.trp=i.cost>0?i.tr/i.cost:NaN});
-  const C1=PAL[0],C3=PAL[4],CR=r=>r<0?'var(--dn)':'var(--up)';
+  const C1=PAL[0],C3=PAL[2],CU=PAL[1],CD=PAL[3],CR=r=>r<0?CD:CU;
   const topV=i=>(i.cost||0)+Math.max(i.rev,0)+i.dv,xmax=Math.max(1,...items.map(topV)),xmin=Math.min(0,...items.map(i=>i.rev));
   const sR=items.reduce((a,i)=>a+i.rev,0),sD=items.reduce((a,i)=>a+i.dv,0),sC=items.reduce((a,i)=>a+(i.cost||0),0);
   const W=Math.max(300,Math.min(640,$('#ptv').clientWidth||360)),mL=64,mR=HIDE?8:62,rh=22,sx=v=>mL+(v-xmin)/(xmax-xmin)*(W-mL-mR);
@@ -732,7 +732,7 @@ function vRen(items,tot){
     if(xmin<0)g+=`<line x1="${sx(0)}" x2="${sx(0)}" y1="0" y2="${H}" stroke="var(--mu)"/>`;
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block">${g}</svg>`};
   const gs=groupsOf(items).map(g=>({...g,items:g.items.slice().sort((a,b)=>topV(b)-topV(a))}));
-  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 8px;flex-wrap:nowrap;gap:8px;font-size:11px;white-space:nowrap"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:var(--up)"></i>Revalor.</span><span><i style="background:var(--dn)"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
+  $('#ptv').innerHTML=`<div class="leg" style="margin:0 0 8px;flex-wrap:nowrap;gap:8px;font-size:11px;white-space:nowrap"><span><i style="background:${C1}"></i>Coste</span><span><i style="background:${CU}"></i>Revalor.</span><span><i style="background:${CD}"></i>Pérdida</span><span><i style="background:${C3}"></i>Dividendos</span></div>`
    +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+chart(g.items)).join('');
   bindTip('#ptv','[data-hi]',el=>{const i=items.find(x=>x.t===el.dataset.hi);return `<b>${i.t}</b><br>Coste ${fm(i.cost||0,0)} €<br>Revalorización ${fm(i.rev,0)} €<br>Dividendos ${fm(i.dv,0)} €<br>Total ${fm(i.tr,0)} € (${pc(i.trp)})`});
 }
