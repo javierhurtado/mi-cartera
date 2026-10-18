@@ -124,7 +124,7 @@ svg text{font-family:inherit}
  <div class="card"><div class="grid" id="kd"></div></div>
  <div class="card"><h2>Resumen por año</h2><div class="sc"><table id="dsum" style="min-width:440px"></table></div><div class="note">Media por mes y por día sobre el tiempo transcurrido del año (el año en curso solo cuenta hasta hoy). Δ compara cada año completo con el anterior.</div></div>
  <div class="card"><h2>Calendario de dividendos</h2><div class="months" id="cal"></div>
- <div class="leg"><span><i style="background:var(--up)"></i>Cobrado</span><span><i style="background:var(--fc)"></i>Previsto (según «Emp.»)</span></div></div>
+ <div class="leg"><span><i style="background:var(--up)"></i>Cobrado</span><span><i style="background:var(--fc)"></i>Previsto (Emp. / último dividendo)</span></div></div>
  <div class="card"><h2>Próximos pagos</h2><div id="up"></div></div>
 </section>
 
@@ -206,9 +206,9 @@ const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
 function updMeta(){$('#meta').textContent=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'')}
-function addLogos(map){
+function addLogos(map,tv){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
-  let st=document.getElementById('lgcss');if(!st){st=document.createElement('style');st.id='lgcss';document.head.appendChild(st)}
+  const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
   st.appendChild(document.createTextNode(css));
 }
 /* Los logos se piden a Drive por lotes después de pintar la app, para que nada espere a la carpeta */
@@ -217,16 +217,16 @@ function fetchLogos(start){
     try{r=JSON.parse(r)}catch(e){LGERR='respuesta no válida';updMeta();return}
     if(r.error){LGERR=r.error;updMeta();return}
     addLogos(r.logos||{});Object.keys(r.logos||{}).forEach(k=>LGSEEN.add(k));LGN=LGSEEN.size;LGTOT=r.total;updMeta();
-    if(r.next!=null)fetchLogos(r.next);else fetchTv()})
+    if(r.next!=null)fetchLogos(r.next)})
   .withFailureHandler(e=>{LGERR=(e&&e.message)||String(e);updMeta()}).loadLogos(start||0);
 }
 
-/* Las posiciones sin logo en Drive se completan con los de TradingView (el servidor busca el logoid de cada ticker) */
+/* Logos de TradingView para todos los tickers (posiciones y opciones); la carpeta de Drive queda como alternativa */
 function fetchTv(){
   google.script.run.withSuccessHandler(r=>{
     try{r=JSON.parse(r)}catch(e){return}
     if(r.error){TVERR=String(r.error).slice(0,60);updMeta();return}
-    addLogos(r.logos||{});Object.keys(r.logos||{}).forEach(k=>TVSEEN.add(k));updMeta();
+    addLogos(r.logos||{},true);Object.keys(r.logos||{}).forEach(k=>TVSEEN.add(k));updMeta();
     if(r.pending>0&&TVTRY++<15)fetchTv()})
   .withFailureHandler(e=>{TVERR=((e&&e.message)||String(e)).slice(0,60);updMeta()}).loadTvLogos();
 }
@@ -244,7 +244,7 @@ function load(){
       $('#msg').classList.add('hide');$('#app').classList.remove('hide');
       META=D.lots.length+' lotes · '+D.divs.length+' dividendos · '+D.today;updMeta();$('#dn').textContent=D.divNeto;
       buildSeries();renderAll();
-      if(!LGSTART){LGSTART=true;fetchLogos(0)}
+      if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll();
 }
@@ -439,7 +439,7 @@ function group(list,keyf,valf,top=8){
 }
 
 /* ---------- renders ---------- */
-const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['peso','Peso'],['yld','Yield'],['sector','Sector']];
+const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['chg','Día'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['peso','Peso'],['yld','Yield'],['sector','Sector']];
 const STRC=['t','ccy','pais','sector'];
 const num=x=>(x==null||!isFinite(x))?NaN:x;
 const tile=(k,v,sub)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
@@ -488,7 +488,7 @@ function renderPos(){
   if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
   else{$('#kp').className='card';const c=rows.reduce((s,r)=>s+(r.cost||0),0),g=tv-c;$('#kp').innerHTML='<div class="grid">'+[['Valor (filtro)',fh(tv)],['Coste (filtro)',fh(c)],['PyG no realizado',`<span class="${cl(g)}">${fh(g)} (${pc(c?g/c:NaN)})</span>`],['Posiciones',rows.length]].map(([k,v])=>kpi(k,v)).join('')+'</div><div class="note">Resumen del filtro activo. Quita los filtros para ver el resumen completo.</div>'}
   $('#tp').innerHTML='<tr>'+COLS.map(([c,l])=>`<th class="srt" data-sort="${c}">${l}${S.sort.k===c?(S.sort.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
-  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${p.sector}</td></tr>`).join('');
+  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td class="${cl(p.chg)}">${pc(p.chg)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${p.sector}</td></tr>`).join('');
   document.querySelectorAll('[data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
   document.querySelectorAll('[data-sort]').forEach(h=>h.onclick=()=>{const c=h.dataset.sort;S.sort=S.sort.k===c?{k:c,d:-S.sort.d}:{k:c,d:STRC.includes(c)?1:-1};renderPos()});
 }
@@ -542,6 +542,23 @@ function renderRent(){
   $('#hs').innerHTML=msg+'<div class="row" style="margin-top:8px"><button id="bh">'+(h?'↻ Reconstruir histórico':'Construir histórico')+'</button></div>';
   $('#bh').onclick=buildHist;
 }
+/* Proyección de años futuros: por cada periodo (mes) se toma el último dividendo cobrado por acción (o el anunciado en Emp.) × acciones actuales.
+   Si no hay histórico del valor se usa la previsión mensual de Emp. */
+let PMC=null;
+function sharesAt(t,d){return D.lots.filter(l=>l.t===t&&l.fc<=d&&(!l.fv||l.fv>d)).reduce((a,l)=>a+l.q,0)}
+function projPer(e){
+  if(!PMC||PMC.d!==D.today)PMC={d:D.today,m:{}};
+  if(PMC.m[e.t])return PMC.m[e.t];
+  const lim=new Date(D.today);lim.setDate(lim.getDate()-400);const ls=lim.toISOString().slice(0,10);
+  const slot=Array(12).fill(null);
+  D.divs.filter(x=>x.t===e.t&&x.f>=ls).forEach(x=>{const m=+x.f.slice(5,7)-1,q=sharesAt(e.t,x.f);if(!(q>0))return;
+    const ym=x.f.slice(0,7),ps=x.net/q;
+    if(!slot[m]||ym>slot[m].ym)slot[m]={ym,ps};else if(ym===slot[m].ym)slot[m].ps+=ps});
+  let out=slot.map(x=>x?x.ps:0);
+  if(e.nextDiv>0&&e.nextDate){const m=+e.nextDate.slice(5,7)-1;out[m]=e.nextDiv}   // último anunciado
+  if(!out.some(v=>v>0))out=e.months.slice();
+  return PMC.m[e.t]=out}
+const pmv=(e,Y,cy,m)=>Y>cy?projPer(e)[m]:e.months[m];
 function divModel(){
   const rec={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=+x.f.slice(0,4),m=+x.f.slice(5,7)-1;((rec[y]=rec[y]||[])[m]=(rec[y][m]||[])).push({t:x.t,d:x.f,a:x.net})});
   return rec;
@@ -557,12 +574,12 @@ function renderDiv(){
   const Y=S.year;let totR=0,totF=0,html='';
   for(let m=0;m<12;m++){
     const got=(rec[Y]&&rec[Y][m])||[],items=got.map(x=>({...x,f:false}));
-    if(Y>cy||(Y===cy&&m>=cm)){held.forEach(e=>{const a=e.months[m]*e.acc;if(a>0&&!got.some(x=>x.t===e.t))items.push({t:e.t,a,f:true})})}
+    if(Y>cy||(Y===cy&&m>=cm)){held.forEach(e=>{const a=pmv(e,Y,cy,m)*e.acc;if(a>0&&!got.some(x=>x.t===e.t))items.push({t:e.t,a,f:true})})}
     const r=items.filter(x=>!x.f).reduce((s,x)=>s+x.a,0),f=items.filter(x=>x.f).reduce((s,x)=>s+x.a,0);totR+=r;totF+=f;
     items.sort((a,b)=>b.a-a.a);
     html+=`<div class="mt ${Y===cy&&m===cm?'cur':''}"><div class="h"><span>${MES[m]} ${Y}</span><span><span class="up">${fh(r)}</span>${f>0?` <span class="fc">+${fh(f)}</span>`:''}</span></div>${items.map(x=>`<div class="it ${x.f?'f':''}"><span>${logo(x.t)}${x.t}${x.d?` <span class="k">${x.d.slice(8)}/${x.d.slice(5,7)}</span>`:''}</span><span class="a">${fh(x.a)}</span></div>`).join('')||'<div class="k">—</div>'}</div>`;
   }
-  $('#cal').innerHTML=html;
+  $('#cal').innerHTML=(Y>cy?'<div class="note" style="grid-column:1/-1;margin:0 0 6px">Estimación '+Y+': último dividendo por acción de cada periodo (cobrado o anunciado en Emp.) × acciones actuales. Los valores sin histórico usan la previsión mensual de Emp.</div>':'')+html;
   (function(){
     const ys=Object.keys(rec).map(Number).filter(y=>y<=cy).sort((a,b)=>a-b),tots={},rows=[];
     ys.forEach(y=>{let tot=0,n=0;(rec[y]||[]).forEach(a=>(a||[]).forEach(x=>{tot+=x.a;n++}));
@@ -574,19 +591,19 @@ function renderDiv(){
   const l12=D.divs.filter(x=>vis(x.t)&&x.f>(new Date(Date.UTC(cy-1,cm,+D.today.slice(8)))).toISOString().slice(0,10)).reduce((s,x)=>s+x.net,0);
   const ann=held.reduce((s,e)=>s+e.acc*e.divAnual,0),tvv=D.totals.valor,tc=D.totals.coste;
   $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual estimado',fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
-  const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,10);
-  $('#up').innerHTML=up.length?up.map(e=>`<div class="it" style="font-size:14px;padding:4px 0"><span>${logo(e.t)}<b>${e.t}</b> <span class="k">${e.name||''}</span></span><span><span class="k">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}/${e.nextDate.slice(0,4)}</span> &nbsp; <b>${fh(e.nextTotal)}</b></span></div>`).join(''):'<div class="note">Sin próximos pagos en la columna «Fecha dividendo» de Emp.</div>';
+  const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,3);
+  $('#up').innerHTML=up.length?up.map(e=>`<div class="it" style="font-size:14px;padding:4px 0"><span>${logo(e.t)}<b>${e.t}</b> <span class="k">${e.name||''}</span></span><span><span class="k">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}/${e.nextDate.slice(0,4)}</span> &nbsp; <b>${fh(e.nextTotal)}</b></span></div>`).join(''):'<div class="note">Sin próximos pagos</div>';
 }
 function renderCharts(){
   const Y=S.year,cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
   const rec=divModel(),got=[],fc=[];
   for(let m=0;m<12;m++){const g=((rec[Y]||[])[m]||[]);got.push(g.reduce((s,x)=>s+x.a,0));
-    let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{if(e.months[m]>0&&!g.some(x=>x.t===e.t))f+=e.months[m]*e.acc});fc.push(f)}
+    let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{const v=pmv(e,Y,cy,m);if(v>0&&!g.some(x=>x.t===e.t))f+=v*e.acc});fc.push(f)}
   const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.net});const yl=Object.keys(yrs).sort();
   const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
-  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Dividendos por año','a2'],['Opciones (PyG) por año de cierre','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
+  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
   if(ser().length)document.querySelectorAll('.pp').forEach(el=>{el.innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
     el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})});
   document.querySelectorAll('.xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
@@ -602,7 +619,7 @@ function renderCharts(){
   const oyl=Object.keys(oy).sort();
   reg('#a11',id=>hbars(id,Object.entries(ot).map(([t,v])=>({t:D.positions.some(p=>p.t===t)?t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10)));
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
-  $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b> · por ejercicio fiscal de cierre (contratos cerrados de la pestaña Opc.)</div>');
+  $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b></div>');
   reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
   reg('#a3',id=>hbars(id,topT));
   reg('#a4',id=>hbars(id,[...ps].sort((a,b)=>b.val-a.val).slice(0,10).map(p=>({t:p.t,label:p.t,value:p.val}))));
