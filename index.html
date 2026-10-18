@@ -772,22 +772,32 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=2').ca
 if(!CFG.url||!CFG.key)showCfg();else load();
 (function(){
   const rf=document.getElementById('rf');if(!rf)return;
-  const svg=rf.querySelector('svg');let y0=0,x0=0,dy=0,act=false,busy=false;
+  const svg=rf.querySelector('svg'),els=()=>[...document.querySelectorAll('#cfgscr,#msg,#app,#ft')];
+  const HOLD=54,THR=90;
+  let off=0,vo=0,tgt=0,ang=0,w=0,mode='idle',dragging=false,raf=0,last=0,y0=0,x0=0,dy=0,act=false,busy=false,stopT=0;
   const top=()=>(document.scrollingElement||document.documentElement).scrollTop<=0;
   const blocked=()=>[...document.querySelectorAll('.ov')].some(o=>!o.classList.contains('hide'));
-  const rot=d=>{svg.style.transition=d==null?'transform .25s':'none';svg.style.transform=d==null?'':'rotate('+d+'deg)'};
-  window.refreshData=()=>{if(busy)return;
-    if(!CFG.url||!CFG.key){showCfg();return}
-    busy=true;window.__PTR=true;rot(null);svg.classList.add('spin');const t0=Date.now();
-    const fin=()=>{setTimeout(()=>{window.__PTR=false;svg.classList.remove('spin');busy=false},Math.max(0,800-(Date.now()-t0)))};
+  const rubber=d=>110*(1-Math.exp(-Math.max(0,d)/150));
+  const apply=()=>{const tr=Math.abs(off)>.05?'translateY('+off.toFixed(2)+'px)':'';els().forEach(e=>e.style.transform=tr);svg.style.transform=ang?'rotate('+ang.toFixed(1)+'deg)':''};
+  const tick=ts=>{raf=0;const dt=Math.min(.033,((ts-last)/1000)||.016);last=ts;let go=dragging;
+    if(!dragging){const a=-260*(off-tgt)-20*vo;vo+=a*dt;off+=vo*dt;if(Math.abs(off-tgt)>.3||Math.abs(vo)>4)go=true;else{off=tgt;vo=0}}
+    if(mode==='spin'){w+=(560-w)*Math.min(1,dt*5);ang+=w*dt;go=true}
+    else if(mode==='stop'){const r=stopT-ang;if(r<=.4){ang=stopT;w=0;mode='idle';ang=0}else{w=Math.max(40,r*5.5);ang+=Math.min(r,w*dt);go=true}}
+    else if(mode==='unwind'){ang*=Math.exp(-dt*10);if(Math.abs(ang)<.5){ang=0;mode='idle'}else go=true}
+    apply();if(go)raf=requestAnimationFrame(tick);else{off=0;ang=0;apply()}};
+  const run=()=>{if(!raf){last=performance.now();raf=requestAnimationFrame(tick)}};
+  const start=()=>{if(busy)return;if(!CFG.url||!CFG.key){showCfg();return}
+    busy=true;window.__PTR=true;dragging=false;tgt=HOLD;mode='spin';run();const t0=Date.now();
+    const fin=()=>setTimeout(()=>{window.__PTR=false;mode='stop';stopT=Math.ceil((ang+120)/360)*360;tgt=0;vo=-30;busy=false;run()},Math.max(0,900-(Date.now()-t0)));
     const safety=setTimeout(fin,45000);load(()=>{clearTimeout(safety);fin()})};
-  rf.onclick=window.refreshData;
+  window.refreshData=start;rf.onclick=start;
   addEventListener('touchstart',e=>{if(busy||e.touches.length!==1||blocked()||!top()){act=false;return}
-    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true},{passive:true});
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true;dragging=true;mode='idle';ang=0;off=0;vo=0;tgt=0;run()},{passive:true});
   addEventListener('touchmove',e=>{if(!act)return;const t=e.touches[0];dy=t.clientY-y0;
-    if(Math.abs(t.clientX-x0)>Math.abs(dy)){act=false;rot(null);return}
-    if(dy>0)rot(Math.min(dy,160)*2.2)},{passive:true});
-  const end=()=>{if(!act)return;act=false;if(dy>90){rot(null);window.refreshData()}else rot(null)};
+    if(Math.abs(t.clientX-x0)>Math.abs(dy)&&dy>0){act=false;dragging=false;mode='unwind';tgt=0;run();return}
+    off=rubber(dy);ang=Math.max(0,dy)*2.4;run()},{passive:true});
+  const end=()=>{if(!act)return;act=false;dragging=false;
+    if(dy>THR)start();else{mode='unwind';tgt=0;vo=0;run()}};
   addEventListener('touchend',end,{passive:true});addEventListener('touchcancel',end,{passive:true});
 })();
 
