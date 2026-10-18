@@ -469,7 +469,7 @@ function renderSummary(){
   const sum=[lat,div,opc,rea].reduce((s,v)=>s+(isFinite(v)?v:0),0),tot=isFinite(num(T.tr))?T.tr:sum;
   const eur=v=>HIDE?'':`<span class="${cl(v)}">${fm(v,0)} €</span>`;
   const sm=(k,v)=>`<div class="kc"><div class="l">${k}</div><div class="n ${cl(v)}">${pc(pct(v))}</div><div class="s">${eur(v)}&nbsp;</div></div>`;
-  const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' · '}${pc(T.pygDiaPct)}</span> hoy`:'&nbsp;';
+  const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' · '}${pc(T.pygDiaPct)}</span>`:'&nbsp;';
   $('#kp').className='card kpw';
   $('#kp').innerHTML=`<div class="kp3">
     <div class="kc"><div class="l">Valor</div><div class="n">${HIDE?'•••':fm(T.valor,0)+' €'}</div><div class="s">${dia}</div></div>
