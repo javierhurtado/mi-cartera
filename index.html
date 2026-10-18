@@ -24,7 +24,7 @@ main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(saf
 input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
-#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
+button.inf{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:0;padding:0;margin:0 0 0 6px;border:1px solid var(--mu);border-radius:50%;background:transparent;color:var(--mu);font:italic 600 13px/1 Georgia,serif;vertical-align:middle;cursor:pointer}button.inf.hide{display:none}#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
 #bmc{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#bmc::-webkit-scrollbar{display:none}#bmc button{flex:none;white-space:nowrap}#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
@@ -131,7 +131,7 @@ svg text{font-family:inherit}
  <div class="chips" id="yrs"></div>
  <div class="card"><div class="grid" id="kd"></div></div>
  <div class="card"><h2>Resumen por año</h2><div class="sc"><table id="dsum" style="min-width:440px"></table></div><div class="note">Media por mes y por día sobre el tiempo transcurrido del año (el año en curso solo cuenta hasta hoy). Δ compara cada año completo con el anterior.</div></div>
- <div class="card"><h2>Calendario de dividendos <button id="calinfo" class="ib" style="width:22px;height:22px;min-width:0;padding:0;border-radius:50%;font-size:12px;font-style:italic;vertical-align:2px;margin-left:4px" aria-label="Información">i</button></h2><div class="months" id="cal"></div>
+ <div class="card"><h2>Calendario de dividendos <button id="calinfo" class="inf hide" aria-label="Información">i</button></h2><div class="months" id="cal"></div>
  <div class="leg"><span><i style="background:var(--up)"></i>Cobrado</span><span><i style="background:var(--fc)"></i>Previsto</span></div></div>
  <div class="card"><h2>Próximos pagos</h2><div id="up"></div></div>
 </section>
@@ -621,6 +621,7 @@ function renderDiv(){
     html+=`<div class="mt ${Y===cy&&m===cm?'cur':''}"><div class="h"><span>${MES[m]} ${Y}</span><span><span class="up">${fh(r)}</span>${f>0?` <span class="fc">+${fh(f)}</span>`:''}</span></div>${items.map(x=>`<div class="it ${x.f?'f':''}"><span>${logo(x.t)}${x.t}${x.d?` <span class="k">${x.d.slice(8)}/${x.d.slice(5,7)}</span>`:''}</span><span class="a">${fh(x.a)}</span></div>`).join('')||'<div class="k">—</div>'}</div>`;
   }
   $('#cal').innerHTML=html;
+  $('#calinfo').classList.toggle('hide',!(Y>cy));
   $('#calinfo').onclick=()=>{$('#dtc').innerHTML='<div class="dh"><b style="font-size:17px">Estimación de dividendos</b><button id="dx">✕ Cerrar</button></div><div class="note" style="margin:10px 0 0;font-size:14px;line-height:1.5">Estimación '+(Y>cy?Y:cy+1)+': previsión mensual de Emp. (último dividendo anunciado por acción) × acciones actuales. Si un valor no tiene previsión, se usa lo que cobró en los últimos 12 meses.</div>';$('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide')};
   (function(){
     const ys=Object.keys(rec).map(Number).filter(y=>y<=cy).sort((a,b)=>a-b),tots={},rows=[];
