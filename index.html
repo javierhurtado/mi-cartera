@@ -383,7 +383,7 @@ function tipHook(root,W,fn){
   svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
 }
 function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
-  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;const H=WX?300:200,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:200,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
   const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*6.2)+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
@@ -410,7 +410,7 @@ function hbars(id,items,fmt=n=>fh(n,0)){
   bindTip(id,'.hbr',el=>{const x=items[+el.dataset.hi];return `<b>${x.label}</b><br>${fmt(x.value)}${HIDE?'':' €'}`});
 }
 function line(id,series,fmt=pc,W=640){
-  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
   const H=WX?320:(W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
@@ -469,7 +469,7 @@ function renderSummary(){
   const sum=[lat,div,opc,rea].reduce((s,v)=>s+(isFinite(v)?v:0),0),tot=isFinite(num(T.tr))?T.tr:sum;
   const eur=v=>HIDE?'':`<span class="${cl(v)}">${fm(v,0)} €</span>`;
   const sm=(k,v)=>`<div class="kc"><div class="l">${k}</div><div class="n ${cl(v)}">${pc(pct(v))}</div><div class="s">${eur(v)}&nbsp;</div></div>`;
-  const f0=(D.lots||[]).reduce((a,l)=>l.fc&&l.fc<a?l.fc:a,'9999'),dd=f0<'9999'?days(D.today,f0):NaN,tcar=isFinite(dd)?(Math.floor(dd/365.25)?Math.floor(dd/365.25)+' a ':'')+Math.floor(dd%365.25/30.44)+' m · desde '+f0.slice(0,4):'&nbsp;';
+  const f0=(D.lots||[]).reduce((a,l)=>l.fc&&l.fc<a?l.fc:a,'9999'),dd=f0<'9999'?days(D.today,f0):NaN,tcar=isFinite(dd)?(Math.floor(dd/365.25)?Math.floor(dd/365.25)+' a ':'')+Math.floor(dd%365.25/30.44)+' m':'&nbsp;';
   const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' € · '}${pc(T.pygDiaPct)}</span>`:'&nbsp;';
   $('#kp').className='card kpw';
   $('#kp').innerHTML=`<div class="kp3">
