@@ -79,7 +79,7 @@ input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border
 .hbr:hover,.rowp:hover,.pc2:hover{background:rgba(127,127,127,.1)}.hbr{border-radius:6px;padding:1px 4px}
 html,body{overscroll-behavior-y:none}
 #sbar{position:fixed;top:0;left:0;width:100%;height:max(env(safe-area-inset-top,0px),8px);background:var(--bg);z-index:25}
-#gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
+#ptr{position:fixed;left:50%;top:calc(max(env(safe-area-inset-top,0px),8px) - 6px);width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;opacity:0;z-index:26;pointer-events:none;transform:translate(-50%,0);color:var(--tx);box-shadow:0 4px 14px rgba(0,0,0,.3)}#ptr svg{display:block}#ptr.sp svg{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}\n#gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
 .cw{position:relative}.cw svg{touch-action:pan-y;display:block}
@@ -139,7 +139,7 @@ svg text{font-family:inherit}
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
 <div id="ft"><span class="note" id="meta"></span></div>
-<div id="sbar"></div><div id="gtt" class="tt hide"></div>
+<div id="sbar"></div><div id="ptr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
@@ -769,4 +769,23 @@ $('#cc').onclick=async()=>{await idb.clear();$('#ce').textContent='Caché borrad
 $('#rf').onclick=()=>{if(!CFG.url||!CFG.key)showCfg();else load()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=2').catch(()=>{});
 if(!CFG.url||!CFG.key)showCfg();else load();
+(function(){
+  const ind=document.getElementById('ptr');if(!ind)return;
+  let y0=0,x0=0,dy=0,act=false,busy=false;
+  const top=()=>(document.scrollingElement||document.documentElement).scrollTop<=0;
+  const blocked=()=>[...document.querySelectorAll('.ov')].some(o=>!o.classList.contains('hide'));
+  const rest=()=>{ind.style.transition='transform .2s,opacity .2s';ind.style.opacity=0;ind.style.transform='translate(-50%,0)'};
+  addEventListener('touchstart',e=>{if(busy||e.touches.length!==1||blocked()||!top()){act=false;return}
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true;ind.style.transition='none'},{passive:true});
+  addEventListener('touchmove',e=>{if(!act)return;const t=e.touches[0];dy=t.clientY-y0;
+    if(Math.abs(t.clientX-x0)>Math.abs(dy)||dy<=0){if(dy<=0&&Math.abs(t.clientX-x0)<=Math.abs(dy)){ind.style.opacity=0}else act=false;return}
+    const d=Math.min(dy,130)*.55;ind.style.opacity=Math.min(1,dy/80);ind.style.transform='translate(-50%,'+d+'px) rotate('+(dy*3)+'deg)'},{passive:true});
+  const end=()=>{if(!act)return;act=false;
+    if(dy>80){busy=true;ind.style.transition='transform .2s';ind.style.opacity=1;ind.style.transform='translate(-50%,44px)';ind.classList.add('sp');
+      if(!CFG.url||!CFG.key)showCfg();else load();
+      setTimeout(()=>{ind.classList.remove('sp');rest();busy=false},1600)}
+    else rest()};
+  addEventListener('touchend',end,{passive:true});addEventListener('touchcancel',end,{passive:true});
+})();
+
 </script></main></body></html>
