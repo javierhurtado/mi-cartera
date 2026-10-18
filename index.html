@@ -23,7 +23,9 @@ main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(saf
 .ov{padding-top:calc(16px + env(safe-area-inset-top))}
 input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
+nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
+#ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 button{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 13px;cursor:pointer;font:inherit}
 button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
@@ -101,7 +103,7 @@ svg text{font-family:inherit}
 .leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
 </style></head><body><main>
-<div class="top"><h1>📈 Mi Cartera</h1><div class="row"><span class="note" id="meta"></span> <button id="rf">↻ Actualizar</button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes">⚙</button></div></div>
+<div class="top"><h1>📈 Mi Cartera</h1><div class="row"><button id="rf" class="ib" title="Actualizar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
 <div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>
 <div id="msg" class="card">Cargando datos de tu hoja…</div>
 <div id="app" class="hide">
@@ -135,6 +137,7 @@ svg text{font-family:inherit}
 <div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
+<div id="ft"><span class="note" id="meta"></span></div>
 <div id="sbar"></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
@@ -186,6 +189,7 @@ function showCfg(msg){
 }
 
 let D=null,SER=[],SERR=[],HOLD={},FL=[],EMP={};
+let FO=false;try{FO=localStorage.getItem('fo')==='1'}catch(e){}
 const S={per:'all',src:null,year:new Date().getFullYear(),sort:{k:'val',d:-1},fb:'',fp:'',fc:'',pv:'mos',pg:'',pc:'n'};
 let HIDE=false,HID=new Set();
 try{HIDE=localStorage.getItem('hide')==='1';HID=new Set(JSON.parse(localStorage.getItem('hid')||'[]'))}catch(e){}
@@ -485,7 +489,9 @@ function renderPos(){
     if(str)return String(x||'').localeCompare(String(y||''),'es')*dir;
     x=(x==null||!isFinite(x))?-Infinity*dir:x;y=(y==null||!isFinite(y))?-Infinity*dir:y;return (x-y)*dir||0});
   const chips=(key,l,opts,lab)=>`<div class="fg"><span class="k">${l}</span><button data-f="${key}" data-v="" class="${!S[key]?'on':''}">Todos</button>${opts.map(o=>`<button data-f="${key}" data-v="${o}" class="${S[key]===o?'on':''}">${lab?lab(o):o}</button>`).join('')}</div>`;
-  $('#pf').innerHTML=chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+`<div class="note">${rows.length} posiciones · toca una cabecera para ordenar, toca una fila para ver sus lotes y dividendos</div>`;
+  const act=[f.fb,f.fp&&flag(f.fp)+' '+f.fp,f.fc&&sym(f.fc)+' '+f.fc].filter(Boolean);
+  $('#pf').innerHTML=`<div class="xh" id="pfh"><span><b>Filtros</b> <span class="${act.length?'up':'k'}">${act.length?act.join(' · ')+' · ':''}${rows.length} posiciones</span></span><span class="ex">${FO?'▾':'▸'}</span></div>`+(FO?`<div style="margin-top:8px">`+chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+'</div>':'');
+  $('#pfh').onclick=()=>{FO=!FO;try{localStorage.setItem('fo',FO?'1':'0')}catch(e){}renderPos()};
   document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{S[b.dataset.f]=b.dataset.v;renderPos()});
   if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
   else{$('#kp').className='card';const c=rows.reduce((s,r)=>s+(r.cost||0),0),g=tv-c;$('#kp').innerHTML='<div class="grid">'+[['Valor (filtro)',fh(tv)],['Coste (filtro)',fh(c)],['PyG no realizado',`<span class="${cl(g)}">${fh(g)} (${pc(c?g/c:NaN)})</span>`],['Posiciones',rows.length]].map(([k,v])=>kpi(k,v)).join('')+'</div><div class="note">Resumen del filtro activo. Quita los filtros para ver el resumen completo.</div>'}
