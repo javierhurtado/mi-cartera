@@ -74,7 +74,7 @@ tr.sold td{opacity:.6}
 .kp4 .kc{padding:6px 8px}.kp4 .n{font-size:14px}
 #kp.card{padding:10px}
 @media(min-width:1000px){#kp.kpw{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}#kp.kpw .kp3,#kp.kpw .kp4{display:contents}}
-.pk{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);cursor:pointer}.pk input{width:18px;height:18px}.pk .lg{margin:0}
+.pk{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);cursor:pointer}.pk.hide{display:none}.pk input{width:18px;height:18px}.pk .lg{margin:0}
 input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font:inherit;flex:1;min-width:120px}
 .tl{padding:1px}
 .dg circle{transition:opacity .12s}.dg:hover circle{opacity:.45}.dg circle:hover{opacity:1}
@@ -141,7 +141,7 @@ svg text{font-family:inherit}
 <div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
-<div id="ft"><span class="note" id="meta"></span></div>
+<div id="ft" style="display:none"><span class="note" id="meta"></span></div>
 <div id="sbar"></div><div id="ptr"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="7" transform="rotate(0 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(30 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(60 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(90 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(120 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(150 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(180 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(210 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(240 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(270 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(300 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(330 12 12)"/></svg></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
@@ -183,7 +183,7 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
       if(name==='loadAll'&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
-      if(!served)ko&&ko(e);else {const m=document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
+      if(!served)ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
     }
   }}})}
 window.google={script:{run:mkRun(null,null)}};
@@ -215,7 +215,7 @@ const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:'
 const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
-function updMeta(){$('#meta').textContent=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'')}
+function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'');$('#meta').textContent=T;const sm=$('#smeta');if(sm)sm.textContent=T}
 function addLogos(map,tv){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
   const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
@@ -793,10 +793,12 @@ function openSettings(){
   $('#stc').innerHTML=`<div class="dh"><b style="font-size:17px">⚙ Ajustes</b><button id="sx">✕ Cerrar</button></div>
   <div class="row" style="margin:12px 0"><button id="s-eye" class="ib ${HIDE?'on':''}">${eyeSvg(false)} Ocultar importes (solo %)</button><button id="s-conn">🔌 Conexión</button></div>
   <div class="fg" style="margin-bottom:8px"><span class="k">Tema</span><button data-th="" class="${!THEME?'on':''}">Automático</button><button data-th="light" class="${THEME==='light'?'on':''}">Claro</button><button data-th="dark" class="${THEME==='dark'?'on':''}">Oscuro</button></div>
-  <h2>Posiciones visibles</h2>
-  <div class="note" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
+  <h2>Posiciones visibles <button id="vinfo" class="inf" aria-label="Información">i</button></h2>
+  <div class="note hide" id="vnote" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
   <div class="row" style="margin-bottom:6px"><input class="q" id="sq" placeholder="Buscar ticker o nombre…"><button id="sall">Mostrar todas</button></div>
-  <div id="sl">${ps.map(p=>`<label class="pk" data-q="${(p.t+' '+((EMP[p.t]||{}).name||'')).toLowerCase()}"><input type="checkbox" data-h="${p.t}" ${vis(p.t)?'checked':''}>${logo(p.t)}<b>${p.t}</b> <span class="k">${(EMP[p.t]||{}).name||''}</span></label>`).join('')}</div>`;
+  <div id="sl">${ps.map(p=>`<label class="pk" data-q="${(p.t+' '+((EMP[p.t]||{}).name||'')).toLowerCase()}"><input type="checkbox" data-h="${p.t}" ${vis(p.t)?'checked':''}>${logo(p.t)}<b>${p.t}</b> <span class="k">${(EMP[p.t]||{}).name||''}</span></label>`).join('')}</div>
+  <div class="note" id="smeta" style="margin-top:18px;text-align:center"></div>`;
+  updMeta();$('#vinfo').onclick=()=>$('#vnote').classList.toggle('hide');
   $('#st').classList.remove('hide');
   $('#sx').onclick=()=>$('#st').classList.add('hide');
   $('#s-eye').onclick=toggleHide;
