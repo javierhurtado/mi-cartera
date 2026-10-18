@@ -25,6 +25,7 @@ input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
 #yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
+#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
@@ -531,11 +532,12 @@ function openDetail(t){
   ${d.orph.length?`<div class="note fc">${d.orph.length} cobro(s) sin lote vivo en esa fecha (¿cambio de ticker o lote sin registrar?): ${d.orph.map(x=>x.f).join(', ')}</div>`:''}`;
   $('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
 }
-const PERS=[['all','Desde el inicio'],['ytd','YTD'],['1y','1 año'],['3y','3 años'],['5y','5 años']];
+const PERS=[['all','Inicio'],['ytd','YTD'],['1y','1 año'],['3y','3 años'],['5y','5 años']];
 function renderRent(){
   const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);
-  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Desde la 1.ª compra${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}">Desde Rend. (${SERR[0].d})</button>`:'')+'<span class="sep"></span>';
-  $('#per').innerHTML=srcB+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
+  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Primera compra${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}">Rendimiento · ${SERR[0].d.slice(8)}/${SERR[0].d.slice(5,7)}/${SERR[0].d.slice(2,4)}</button>`:'');
+  $('#per').style.display='block';
+  $('#per').innerHTML=`<div class="oneline">${srcB}</div><div class="oneline">`+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('')+'</div>';
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p;renderRent()});
   document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.src=b.dataset.s;S.per='all';renderRent();renderCharts()});
   if(!ser().length){$('#kr').innerHTML='<div class="k">Sin datos.</div>';return}
