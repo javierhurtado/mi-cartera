@@ -25,7 +25,7 @@ input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
 #yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
-#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap}
+#bmc{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#bmc::-webkit-scrollbar{display:none}#bmc button{flex:none;white-space:nowrap}#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
@@ -119,7 +119,7 @@ svg text{font-family:inherit}
 
 <section id="rent" class="hide">
  <div class="card"><div class="chips" id="per"></div><div class="grid" id="kr"></div></div>
- <div class="card"><h2>TWR acumulado</h2><div id="ch1" class="sc"></div></div>
+ <div class="card"><h2>TWR acumulado</h2><div id="bmc" class="oneline bmc"></div><div id="bmn" class="note hide"></div><div id="ch1" class="sc"></div></div>
  <div class="card"><h2>Valor de la cartera vs. aportación neta</h2><div id="ch2" class="sc"></div></div>
  <div class="card" id="hs"></div>
  <div class="card note" style="font-size:13px"><b>Cómo se calcula</b><br>
@@ -383,9 +383,9 @@ function tipHook(root,W,fn){
   svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
 }
 function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
-  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;const H=WX?300:200,mL=44,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||W;const H=WX?300:200,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
-  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
+  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*6.2)+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
   lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="${mL-4}" y="${y+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   labels.forEach((l,i)=>{let yp=Y(0),yn=Y(0);
@@ -413,8 +413,8 @@ function line(id,series,fmt=pc,W=640){
   W=WX||Math.round(($(id)||{}).clientWidth||0)||W;
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
-  const H=WX?320:(W<500?200:230),m=W<500?44:52,xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
-  const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
+  const H=WX?320:(W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
+  const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),m=Math.max(W<500?44:52,Math.ceil(Math.max(...[y0,(y0+y1)/2,y1].map(v=>String(fmt(v)).length))*6.2)+10),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
   let g='';[y0,(y0+y1)/2,y1].forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="${m-4}" y="${sy(v)+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   if(y0<0)g+=`<line x1="${m}" x2="${W-6}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--mu)" stroke-dasharray="3 3"/>`;
   series.forEach(s=>g+=`<polyline points="${s.pts.map(p=>sx(new Date(p.d).getTime()).toFixed(1)+','+sy(p.v).toFixed(1)).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2"/>`);
@@ -469,11 +469,12 @@ function renderSummary(){
   const sum=[lat,div,opc,rea].reduce((s,v)=>s+(isFinite(v)?v:0),0),tot=isFinite(num(T.tr))?T.tr:sum;
   const eur=v=>HIDE?'':`<span class="${cl(v)}">${fm(v,0)} €</span>`;
   const sm=(k,v)=>`<div class="kc"><div class="l">${k}</div><div class="n ${cl(v)}">${pc(pct(v))}</div><div class="s">${eur(v)}&nbsp;</div></div>`;
-  const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' · '}${pc(T.pygDiaPct)}</span>`:'&nbsp;';
+  const f0=(D.lots||[]).reduce((a,l)=>l.fc&&l.fc<a?l.fc:a,'9999'),dd=f0<'9999'?days(D.today,f0):NaN,tcar=isFinite(dd)?(Math.floor(dd/365.25)?Math.floor(dd/365.25)+' a ':'')+Math.floor(dd%365.25/30.44)+' m · desde '+f0.slice(0,4):'&nbsp;';
+  const dia=isFinite(num(T.pygDia))?`<span class="${cl(T.pygDia)}">${HIDE?'':fm(T.pygDia,0)+' € · '}${pc(T.pygDiaPct)}</span>`:'&nbsp;';
   $('#kp').className='card kpw';
   $('#kp').innerHTML=`<div class="kp3">
     <div class="kc"><div class="l">Valor</div><div class="n">${HIDE?'•••':fm(T.valor,0)+' €'}</div><div class="s">${dia}</div></div>
-    <div class="kc"><div class="l">Invertido</div><div class="n">${HIDE?'•••':fm(inv,0)+' €'}</div><div class="s">&nbsp;</div></div>
+    <div class="kc"><div class="l">Invertido</div><div class="n">${HIDE?'•••':fm(inv,0)+' €'}</div><div class="s k">${tcar}</div></div>
     <div class="kc"><div class="l">Rentab. total</div><div class="n ${cl(tot)}">${pc(pct(tot))}</div><div class="s">${eur(tot)}&nbsp;</div></div>
   </div><div class="kp4">${sm('Latente',lat)}${sm('Dividendos',div)}${sm('Opciones',opc)}${sm('Realizado',rea)}</div>`;
 }
@@ -533,6 +534,28 @@ function openDetail(t){
   $('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
 }
 const PERS=[['all','Inicio'],['ytd','YTD'],['1y','1A'],['3y','3A'],['5y','5A']];
+const BMK=[['sp','S&P 500',PAL[1]],['ibex','IBEX 35',PAL[2]],['msci','MSCI World',PAL[4]],['dya','Div. Aristocrats',PAL[5]]];
+let BM=null,BMSEL=[],BMLOAD=false,BMERR='';
+function bmLoad(){
+  if(BM||BMLOAD)return;BMLOAD=true;BMERR='';
+  google.script.run.withSuccessHandler(t=>{BMLOAD=false;try{const o=typeof t==='string'?JSON.parse(t):t;if(o.error)throw new Error(o.error);BM=o.bench||{};BMERR=(o.errors&&o.errors.length)?'Sin datos de: '+o.errors.join(', '):''}catch(e){BMERR='No se pudo cargar la comparativa: '+String(e.message||e).slice(0,80)}if($('#ch1')&&ser().length)drawTwr(perf(S.per))})
+   .withFailureHandler(e=>{BMLOAD=false;BMERR='No se pudo cargar la comparativa: '+String((e&&e.message)||e).slice(0,80);if($('#ch1')&&ser().length)drawTwr(perf(S.per))}).loadBench();
+}
+function bmCurve(k,start){
+  const b=BM&&BM[k];if(!b||!b.pts.length)return null;
+  const P=b.pts;let p0=null;for(const x of P){if(x[0]<=start)p0=x[1];else break}
+  if(p0==null)return null;
+  return P.filter(x=>x[0]>=start&&x[0]<=D.today).map(x=>({d:x[0],v:x[1]/p0-1}));
+}
+function drawTwr(r,again){
+  $('#bmc').innerHTML=BMK.map(([k,l,c])=>`<button data-bm="${k}" class="${BMSEL.includes(k)?'on':''}">${l}</button>`).join('');
+  document.querySelectorAll('[data-bm]').forEach(b=>b.onclick=()=>{const k=b.dataset.bm;BMSEL=BMSEL.includes(k)?BMSEL.filter(x=>x!==k):[...BMSEL,k];if(BMSEL.length)bmLoad();drawTwr(r)});
+  const ser=[{name:'Mi cartera (TWR)',color:PAL[0],pts:r.curve}],miss=[];
+  BMSEL.forEach(k=>{const m=BMK.find(x=>x[0]===k),cv=bmCurve(k,r.start);if(cv&&cv.length>1)ser.push({name:m[1],color:m[2],pts:cv});else if(BM)miss.push(m[1])});
+  const msg=BMLOAD&&BMSEL.length?'Cargando índices…':(BMERR&&BMSEL.length?BMERR:(miss.length?'Sin datos en este periodo para: '+miss.join(', '):''));
+  const n=$('#bmn');n.textContent=msg;n.classList.toggle('hide',!msg);
+  line('#ch1',ser);
+}
 function renderRent(){
   const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);
   const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Desde inicio${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}" title="Desde ${SERR[0].d}">Registrado</button>`:'');
@@ -544,7 +567,7 @@ function renderRent(){
   if(!windowStart(S.per)&&S.per!=='all')S.per='all';
   const r=perf(S.per),inc=r.yrs>=1;
   $('#kr').innerHTML=[['TWR',`<span class="${cl(r.twr)}">${pc(r.twr)}</span>`],['TWR anualizado',inc?`<span class="${cl(r.ann)}">${pc(r.ann)}</span>`:'n/d (&lt; 1 año)'],['MWR (TIR anualizada)',`<span class="${cl(r.mwr)}">${pc(r.mwr)}</span>`],['Desde',r.start],['Valor actual',fh(D.totals.valor)],['Aportación neta',fh(ser()[ser().length-1].inv)]].map(([k,v])=>kpi(k,v)).join('');
-  line('#ch1',[{name:'TWR',color:PAL[0],pts:r.curve}]);
+  drawTwr(r);
   line('#ch2',[{name:'Valor de cartera',color:PAL[0],pts:ser().map(x=>({d:x.d,v:x.v}))},{name:'Aportación neta',color:PAL[2],pts:ser().map(x=>({d:x.d,v:x.inv}))}],n=>fh(n,0));
   const h=D.hist;let msg;
   if(!h)msg='<b>Histórico de precios: sin construir.</b> El TWR actual usa solo el último precio operado de cada valor (poco preciso). Constrúyelo para valorar la cartera cada semana.';
