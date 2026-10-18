@@ -24,6 +24,7 @@ main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(saf
 input.q{font-size:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
+#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
 #ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
@@ -574,13 +575,14 @@ function divModel(){
   const rec={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=+x.f.slice(0,4),m=+x.f.slice(5,7)-1;((rec[y]=rec[y]||[])[m]=(rec[y][m]||[])).push({t:x.t,d:x.f,a:x.net})});
   return rec;
 }
+function centerYears(){['#yrs','#yrs2'].forEach(id=>{const c=$(id),b=c&&c.querySelector('.on');if(b&&c.clientWidth)c.scrollLeft=b.offsetLeft-(c.clientWidth-b.offsetWidth)/2})}
 function renderDiv(){
   const rec=divModel(),cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
   const years=Object.keys(rec).map(Number);if(!years.includes(cy))years.push(cy);
   const ymax=Math.max(...years,cy+1);for(let y=Math.min(...years);y<=ymax;y++)if(!years.includes(y))years.push(y);years.sort();
   if(!years.includes(S.year))S.year=cy;
   const chips=years.map(y=>`<button data-y="${y}" class="${S.year===y?'on':''}">${y}</button>`).join('');
-  $('#yrs').innerHTML=chips;$('#yrs2').innerHTML=chips;
+  $('#yrs').innerHTML=chips;$('#yrs2').innerHTML=chips;centerYears();
   document.querySelectorAll('[data-y]').forEach(b=>b.onclick=()=>{S.year=+b.dataset.y;renderDiv();renderCharts()});
   const Y=S.year;let totR=0,totF=0,html='';
   for(let m=0;m<12;m++){
@@ -733,7 +735,7 @@ function renderPort(){
 }
 let rzT=null;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(D&&!$('#pt').classList.contains('hide')&&S.pv==='mos')renderPort()},200)});
 function renderAll(){renderPos();renderRent();renderDiv();renderCharts();if(!$('#pt').classList.contains('hide'))renderPort()}
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));['pos','pt','rent','dv','gr'].forEach(id=>$('#'+id).classList.toggle('hide',id!==b.dataset.t));if(b.dataset.t==='pt')renderPort()});
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));['pos','pt','rent','dv','gr'].forEach(id=>$('#'+id).classList.toggle('hide',id!==b.dataset.t));if(b.dataset.t==='pt')renderPort();centerYears()});
 const eyeSvg=off=>off?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 function paintEye(){const b=$('#eye');b.innerHTML=eyeSvg(HIDE);b.classList.toggle('on',HIDE);b.title=HIDE?'Mostrar importes':'Ocultar importes'}
 function toggleHide(){HIDE=!HIDE;sv();paintEye();$('#dt').classList.add('hide');if(D)renderAll();const se=$('#s-eye');if(se)se.classList.toggle('on',HIDE)}
