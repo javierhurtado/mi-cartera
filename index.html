@@ -32,6 +32,8 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.g2>.card:last-child:nth-child(odd){grid-column:1/-1}
+@media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
 .g2>.card{margin:0;display:flex;flex-direction:column;min-width:0}.cb{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}.cb>*{width:100%}
 .k{font-size:12px;color:var(--mu)}.v{font-size:19px;font-weight:600}
 .up{color:var(--up)}.dn{color:var(--dn)}.fc{color:var(--fc)}
@@ -70,6 +72,9 @@ tr.sold td{opacity:.6}
 .pk{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);cursor:pointer}.pk input{width:18px;height:18px}.pk .lg{margin:0}
 input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font:inherit;flex:1;min-width:120px}
 .tl{padding:1px}
+.dg circle{transition:opacity .12s}.dg:hover circle{opacity:.45}.dg circle:hover{opacity:1}
+.hbr:hover,.rowp:hover,.pc2:hover{background:rgba(127,127,127,.1)}.hbr{border-radius:6px;padding:1px 4px}
+#gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
 .cw{position:relative}.cw svg{touch-action:pan-y;display:block}
@@ -123,11 +128,12 @@ svg text{font-family:inherit}
  <div class="card"><h2>Próximos pagos</h2><div id="up"></div></div>
 </section>
 
-<section id="gr" class="hide"><div class="chips" id="yrs2"></div><div class="chips" id="per2"></div><div class="g2" id="grs"></div></section>
+<section id="gr" class="hide"><div class="chips" id="yrs2"></div><div class="g2" id="grs"></div></section>
 </div>
 <div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
+<div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
@@ -158,11 +164,13 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
     try{
       if(name==='loadAll'){const c=await idb.get('data');if(c){served=true;ok&&ok(c)}}
       if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
+      if(name==='loadTvLogos'){const c=await idb.get('tv');if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       const t=await apiCall(name,args);
       let o=null;try{o=JSON.parse(t)}catch(e){}
-      if(o&&o.error&&name!=='loadLogos')throw new Error(o.error);
+      if(o&&o.error&&name!=='loadLogos'&&name!=='loadTvLogos')throw new Error(o.error);
       if(name==='loadAll')idb.set('data',t);
       if(name==='loadLogos'&&o&&!o.error)idb.set('lg'+(args[0]||0),{t:Date.now(),v:t});
+      if(name==='loadTvLogos'&&o&&!o.error&&o.pending===0)idb.set('tv',{t:Date.now(),v:t});
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
       if(name==='loadAll'&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
@@ -194,10 +202,10 @@ const kpi=(k,v)=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`
 /* ---------- logos ---------- */
 const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:':'.MI','SWX:':'.SW','HEL:':'.HE','STO:':'.ST','CPH:':'.CO','EBR:':'.BR','ELI:':'.LS','VIE:':'.VI','TSE:':'.TO','TYO:':'.T'};
 /* Logos: solo los de tu carpeta de Drive (TICKER.png). Se pintan como fondo CSS para no repetir el dato en cada fila */
-const LGSEEN=new Set();let LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
+const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
-function updMeta(){$('#meta').textContent=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(HID.size?' · '+HID.size+' ocultas':'')}
+function updMeta(){$('#meta').textContent=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+' ocultas':'')}
 function addLogos(map){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
   let st=document.getElementById('lgcss');if(!st){st=document.createElement('style');st.id='lgcss';document.head.appendChild(st)}
@@ -209,8 +217,18 @@ function fetchLogos(start){
     try{r=JSON.parse(r)}catch(e){LGERR='respuesta no válida';updMeta();return}
     if(r.error){LGERR=r.error;updMeta();return}
     addLogos(r.logos||{});Object.keys(r.logos||{}).forEach(k=>LGSEEN.add(k));LGN=LGSEEN.size;LGTOT=r.total;updMeta();
-    if(r.next!=null)fetchLogos(r.next)})
+    if(r.next!=null)fetchLogos(r.next);else fetchTv()})
   .withFailureHandler(e=>{LGERR=(e&&e.message)||String(e);updMeta()}).loadLogos(start||0);
+}
+
+/* Las posiciones sin logo en Drive se completan con los de TradingView (el servidor busca el logoid de cada ticker) */
+function fetchTv(){
+  google.script.run.withSuccessHandler(r=>{
+    try{r=JSON.parse(r)}catch(e){return}
+    if(r.error){TVERR=String(r.error).slice(0,60);updMeta();return}
+    addLogos(r.logos||{});Object.keys(r.logos||{}).forEach(k=>TVSEEN.add(k));updMeta();
+    if(r.pending>0&&TVTRY++<15)fetchTv()})
+  .withFailureHandler(e=>{TVERR=((e&&e.message)||String(e)).slice(0,60);updMeta()}).loadTvLogos();
 }
 
 /* ---------- carga ---------- */
@@ -313,6 +331,16 @@ const SYM={EUR:'€',USD:'$',GBP:'£',CHF:'CHF',CAD:'C$',JPY:'¥',HKD:'HK$',AUD:
 const sym=c=>SYM[c]||c||'';
 const FLAGS={'eeuu':'🇺🇸','ee.uu.':'🇺🇸','estados unidos':'🇺🇸','usa':'🇺🇸','espana':'🇪🇸','francia':'🇫🇷','paises bajos':'🇳🇱','holanda':'🇳🇱','reino unido':'🇬🇧','uk':'🇬🇧','alemania':'🇩🇪','suiza':'🇨🇭','irlanda':'🇮🇪','canada':'🇨🇦','italia':'🇮🇹','portugal':'🇵🇹','belgica':'🇧🇪','dinamarca':'🇩🇰','suecia':'🇸🇪','noruega':'🇳🇴','finlandia':'🇫🇮','japon':'🇯🇵','china':'🇨🇳','hong kong':'🇭🇰','australia':'🇦🇺','brasil':'🇧🇷','mexico':'🇲🇽','luxemburgo':'🇱🇺','austria':'🇦🇹','singapur':'🇸🇬','india':'🇮🇳','corea del sur':'🇰🇷','israel':'🇮🇱','taiwan':'🇹🇼','bermudas':'🇧🇲','islas caiman':'🇰🇾','grecia':'🇬🇷','polonia':'🇵🇱','sudafrica':'🇿🇦','argentina':'🇦🇷','chile':'🇨🇱','nueva zelanda':'🇳🇿','jersey':'🇯🇪','guernsey':'🇬🇬'};
 const flag=n=>{const k=String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();return FLAGS[k]||'🏳️'};
+function showTip(h,e){const t=$('#gtt');t.innerHTML=h;t.classList.remove('hide');moveTip(e)}
+function moveTip(e){const t=$('#gtt'),w=t.offsetWidth||160,h=t.offsetHeight||50;let x=e.clientX+14,y=e.clientY+14;
+  if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;t.style.left=Math.max(4,x)+'px';t.style.top=Math.max(4,y)+'px'}
+function hideTip(){$('#gtt').classList.add('hide')}
+/* Tooltip al pasar el ratón (en táctil, tocar abre el detalle/listado) */
+function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el=>{
+  el.addEventListener('pointerenter',e=>{if(e.pointerType==='touch')return;const h=fn(el);if(h)showTip(h,e)});
+  el.addEventListener('pointermove',e=>{if(e.pointerType!=='touch')moveTip(e)});
+  el.addEventListener('pointerleave',hideTip)})}
+if(typeof document.addEventListener==='function')document.addEventListener('scroll',hideTip,true);
 let WX=0,CLKID=null;const CLK={},CHF={};
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel)}
 function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML='';$('#xt').textContent=title;$('#xv').classList.remove('hide');
@@ -366,8 +394,9 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
 function hbars(id,items,fmt=n=>fh(n,0)){
   if(!items.length){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
   const max=Math.max(...items.map(x=>Math.abs(x.value)))||1;
-  $(id).innerHTML=items.map((x,i)=>`<div ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.t?logo(x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
+  $(id).innerHTML=items.map((x,i)=>`<div class="hbr" data-hi="${i}" ${x.t?`data-pos="${x.t}"`:''} style="display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;cursor:${x.t?'pointer':'default'}"><div style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.t?logo(x.t):''}${x.label}</div><div style="flex:1;background:var(--bd);border-radius:4px;height:14px"><div style="width:${Math.abs(x.value)/max*100}%;background:${x.value<0?'#d93025':PAL[i%PAL.length]};height:14px;border-radius:4px"></div></div><div style="width:74px;text-align:right">${fmt(x.value)}</div></div>`).join('');
   bindPos(id);
+  bindTip(id,'.hbr',el=>{const x=items[+el.dataset.hi];return `<b>${x.label}</b><br>${fmt(x.value)}${HIDE?'':' €'}`});
 }
 function line(id,series,fmt=pc,W=640){
   W=WX||W;
@@ -398,9 +427,10 @@ function line(id,series,fmt=pc,W=640){
 function donut(id,items){
   const tot=items.reduce((s,x)=>s+x.value,0);if(!(tot>0)){$(id).innerHTML='<div class="note">Sin datos.</div>';return}
   const R=40,C=2*Math.PI*R;let acc=0,g='';
-  items.forEach((x,i)=>{const fr=x.value/tot;g+=`<circle data-gi="${i}" style="cursor:pointer" r="${R}" cx="60" cy="60" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="22" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 60 60)"><title>${x.label}: ${fm(fr*100,1)} %</title></circle>`;acc+=fr});
-  $(id).innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><svg viewBox="0 0 120 120" width="150">${g}</svg><div style="font-size:13px">${items.map((x,i)=>`<div data-gi="${i}" style="cursor:pointer;padding:1px 0"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};margin-right:6px"></i>${x.label} <span class="k">${fm(x.value/tot*100,1)} %</span></div>`).join('')}</div></div>`;
+  items.forEach((x,i)=>{const fr=x.value/tot;g+=`<circle data-gi="${i}" style="cursor:pointer" r="${R}" cx="60" cy="60" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="22" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 60 60)"></circle>`;acc+=fr});
+  $(id).innerHTML=`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><svg class="dg" viewBox="0 0 120 120" width="150">${g}</svg><div style="font-size:13px">${items.map((x,i)=>`<div data-gi="${i}" style="cursor:pointer;padding:1px 0"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};margin-right:6px"></i>${x.label} <span class="k">${fm(x.value/tot*100,1)} %</span></div>`).join('')}</div></div>`;
   document.querySelectorAll(id+' [data-gi]').forEach(e=>e.onclick=()=>showGroup(items[+e.dataset.gi]));
+  bindTip(id,'[data-gi]',el=>{const x=items[+el.dataset.gi];return `<b>${x.label}</b><br>${fm(x.value/tot*100,1)} %${HIDE?'':' · '+fm(x.value,0)+' €'}${x.mem?'<br><span class="k">'+x.mem.length+' posiciones</span>':''}`});
 }
 function group(list,keyf,valf,top=8){
   const m={},mem={};list.forEach(x=>{const k=keyf(x)||'Otros';m[k]=(m[k]||0)+valf(x);(mem[k]=mem[k]||[]).push(x)});
@@ -549,8 +579,6 @@ function renderDiv(){
 }
 function renderCharts(){
   const Y=S.year,cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
-  if(ser().length){$('#per2').innerHTML='<span class="k" style="align-self:center">TWR y valor:</span>'+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
-    document.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})}
   const rec=divModel(),got=[],fc=[];
   for(let m=0;m<12;m++){const g=((rec[Y]||[])[m]||[]);got.push(g.reduce((s,x)=>s+x.a,0));
     let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{if(e.months[m]>0&&!g.some(x=>x.t===e.t))f+=e.months[m]*e.acc});fc.push(f)}
@@ -558,19 +586,25 @@ function renderCharts(){
   const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
-  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Opciones (PyG) por ticker · '+Y,'a11'],['Dividendos por año','a2'],['Opciones (PyG) por año de cierre','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2><div id="${id}" class="cb"></div></div>`).join('');
+  $('#grs').innerHTML=[['Dividendos por mes · '+Y,'a1'],['Opciones (PyG) por mes · '+Y,'a13'],['Dividendos por año','a2'],['Opciones (PyG) por año de cierre','a12'],['Mayores pagadores · '+Y,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por ticker · '+Y,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
+  if(ser().length)document.querySelectorAll('.pp').forEach(el=>{el.innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
+    el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})});
   document.querySelectorAll('.xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
   CLK['#a1']=i=>showList('Dividendos '+MES[i]+' '+Y,((rec[Y]&&rec[Y][i])||[]).map(x=>({t:x.t,sub:fdate(x.d),val:x.a})));
   CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})))};
   const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})))};
+  const optBucket=o=>(o.f.slice(0,4)===String(Y)&&o.f<=D.today)?+o.f.slice(5,7)-1:12;
+  CLK['#a13']=i=>optList((i<12?'Opciones '+MES[i]+' '+Y:'Opciones cerradas antes del vencimiento · '+Y),o=>fyOf(o)===String(Y)&&optBucket(o)===i);
   CLK['#a12']=i=>optList('Opciones cerradas en '+oyl[i],o=>fyOf(o)===oyl[i]);
   reg('#a1',id=>bars(id,MES,[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
-  const OP=(D.opc||[]).filter(o=>vis(o.t)),ot={},oy={};
-  OP.forEach(o=>{const y=fyOf(o);oy[y]=(oy[y]||0)+o.pyg;if(y===String(Y))ot[o.t]=(ot[o.t]||0)+o.pyg});
+  const OP=(D.opc||[]).filter(o=>vis(o.t)),ot={},oy={},om=Array(13).fill(0);
+  OP.forEach(o=>{const y=fyOf(o);oy[y]=(oy[y]||0)+o.pyg;if(y===String(Y)){ot[o.t]=(ot[o.t]||0)+o.pyg;om[optBucket(o)]+=o.pyg}});
   const otTot=Object.values(ot).reduce((a,b)=>a+b,0);
   const oyl=Object.keys(oy).sort();
+  reg('#a13',id=>bars(id,[...MES,'Antic.'],[{name:'PyG opciones',color:PAL[1],data:om}]));
   reg('#a11',id=>hbars(id,Object.entries(ot).map(([t,v])=>({t:D.positions.some(p=>p.t===t)?t:'',label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,10)));
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
+  $('#a13').insertAdjacentHTML('beforeend','<div class="note">Mes = vencimiento del contrato. «Antic.» = cerradas antes de vencer (o con vencimiento futuro): la hoja no guarda la fecha exacta de cierre, solo el ejercicio fiscal.</div>');
   $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b> · por ejercicio fiscal de cierre (contratos cerrados de la pestaña Opc.)</div>');
   reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
   reg('#a3',id=>hbars(id,topT));
@@ -615,20 +649,22 @@ function squarify(items,x,y,w,h){
   return out;
 }
 function tileHtml(r){
-  const bg=S.pc==='r'?tint(r.pygp):'var(--card)',m=Math.min(r.w,r.h)-2,cw=r.w-4,ch=r.h-4;
-  const wtxt=fm(r.w_*100,1)+'%',big=m>=84;
-  const wf=Math.max(8,Math.min(big?14:12,cw/(wtxt.length*0.6)));
-  let L=m>=90?40:m>=64?32:m>=46?26:m>=34?20:16;
-  const hw=wf*1.2+1;
-  if(ch-L<hw)L=Math.max(12,Math.floor(ch-hw));
-  L=Math.max(10,Math.min(L,Math.floor(cw)));
-  const showL=ch>=10&&cw>=10,showW=ch>=L+hw-1&&cw>=wtxt.length*wf*0.5;
-  const tf=Math.max(8,Math.min(big?15:12,(cw-2)/(r.t.length*0.66)));
-  const showT=showW&&ch>=L+hw+tf*1.2+2&&cw>=r.t.length*tf*0.6;
-  return `<div class="tl" data-pos="${r.t}" title="${r.t} · ${fm(r.w_*100,1)} %${HIDE?'':' · '+fm(r.v,0)+' €'}" style="left:${r.x+1}px;top:${r.y+1}px;width:${r.w-2}px;height:${r.h-2}px;background:${bg}">${showL?logo(r.t,'',L):''}${showT?`<b style="font-size:${tf.toFixed(1)}px">${r.t}</b>`:''}${showW?`<span style="font-size:${wf.toFixed(1)}px">${wtxt}</span>`:''}</div>`;
+  const bg=S.pc==='r'?tint(r.pygp):'var(--card)',m=Math.min(r.w,r.h)-2,cw=r.w-4,ch=r.h-4,big=m>=84,wtxt=fm(r.w_*100,1)+'%';
+  const open=(extra)=>`<div class="tl" data-pos="${r.t}" style="left:${r.x+1}px;top:${r.y+1}px;width:${r.w-2}px;height:${r.h-2}px;background:${bg}${extra||''}">`;
+  const wf=Math.max(8,Math.min(big?14:12,cw/(wtxt.length*0.6))),tf=Math.max(8,Math.min(big?15:12,(cw-2)/(r.t.length*0.66)));
+  const Ld=m>=90?40:m>=64?32:m>=46?26:m>=34?20:16,hw=wf*1.2+1,ht=tf*1.2+1;
+  const Lc=Math.min(Ld,Math.floor(ch-hw-ht-2),Math.floor(cw));
+  if(Lc>=14&&cw>=r.t.length*tf*0.6)   // logo arriba, ticker y peso debajo
+    return open()+logo(r.t,'',Lc)+`<b style="font-size:${tf.toFixed(1)}px">${r.t}</b><span style="font-size:${wf.toFixed(1)}px">${wtxt}</span></div>`;
+  const Lr=Math.max(10,Math.min(20,Math.floor(ch-1),Math.floor(cw*0.4))),avail=cw-Lr-4;
+  const f=Math.min(11,(ch-1)/2.5,avail/(Math.max(r.t.length,wtxt.length)*0.62));
+  if(f>=6.5&&ch>=f*2.4)                  // tile pequeño: logo a la izquierda, ticker y peso apilados
+    return open(';flex-direction:row;gap:3px')+logo(r.t,'',Lr)+`<div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.15;font-size:${f.toFixed(1)}px;min-width:0"><b>${r.t}</b><span>${wtxt}</span></div></div>`;
+  const L=Math.max(10,Math.min(Ld,Math.floor(cw),Math.floor(ch-hw-2)));   // último recurso: logo y peso
+  return open()+(ch>=10&&cw>=10?logo(r.t,'',L):'')+(ch>=L+hw-1&&cw>=wtxt.length*wf*0.5?`<span style="font-size:${wf.toFixed(1)}px">${wtxt}</span>`:'')+'</div>';
 }
 function vMos(items,tot){
-  const box=$('#ptv'),W=Math.max(280,box.clientWidth||340),H=W<560?Math.round(Math.min(720,Math.max(520,W*1.8))):Math.round(Math.min(640,Math.max(420,W*0.6)));
+  const box=$('#ptv'),W=Math.max(280,box.clientWidth||340),H=W<560?Math.round(Math.min(900,Math.max(560,W*2.2))):Math.round(Math.min(640,Math.max(420,W*0.6)));
   const gs=groupsOf(items);let html='';
   items.forEach(i=>i.w_=i.v/tot);
   if(!S.pg)squarify(items,0,0,W,H).forEach(r=>html+=tileHtml(r));
@@ -649,9 +685,10 @@ function vAni(items,tot){
   if(S.pg)sl=groupsOf(items).map(g=>({label:g.label,v:g.v}));
   else{sl=items.slice(0,12).map(i=>({label:i.t,t:i.t,v:i.v}));const r=items.slice(12).reduce((s,i)=>s+i.v,0);if(r>0)sl.push({label:'Otros ('+(items.length-12)+')',v:r})}
   const R=70,C=2*Math.PI*R;let acc=0,g='';
-  sl.forEach((x,i)=>{const fr=x.v/tot;g+=`<circle r="${R}" cx="100" cy="100" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="30" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 100 100)"><title>${x.label}: ${fm(fr*100,1)} %</title></circle>`;acc+=fr});
+  sl.forEach((x,i)=>{const fr=x.v/tot;g+=`<circle data-gi="${i}" r="${R}" cx="100" cy="100" fill="none" stroke="${PAL[i%PAL.length]}" stroke-width="30" stroke-dasharray="${fr*C} ${C}" stroke-dashoffset="${-acc*C}" transform="rotate(-90 100 100)"></circle>`;acc+=fr});
   g+=`<text x="100" y="96" text-anchor="middle" font-size="11" fill="var(--mu)">Cartera</text><text x="100" y="114" text-anchor="middle" font-size="15" font-weight="700" fill="var(--tx)">${fh(tot,0)} €</text>`;
-  $('#ptv').innerHTML=`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" width="230">${g}</svg><div style="flex:1;min-width:210px">${sl.map((x,i)=>`<div class="rowp" ${x.t?`data-pos="${x.t}"`:''}><i style="width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};flex:none"></i>${x.t?logo(x.t):''}<span class="nmx" style="flex:1;width:auto"><b>${x.label}</b></span><b>${fm(x.v/tot*100,1)} %</b></div>`).join('')}</div></div>`;
+  $('#ptv').innerHTML=`<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center"><svg class="dg" viewBox="0 0 200 200" width="230">${g}</svg><div style="flex:1;min-width:210px">${sl.map((x,i)=>`<div class="rowp" data-gi="${i}" ${x.t?`data-pos="${x.t}"`:''}><i style="width:10px;height:10px;border-radius:2px;background:${PAL[i%PAL.length]};flex:none"></i>${x.t?logo(x.t):''}<span class="nmx" style="flex:1;width:auto"><b>${x.label}</b></span><b>${fm(x.v/tot*100,1)} %</b></div>`).join('')}</div></div>`;
+  bindTip('#ptv','[data-gi]',el=>{const x=sl[+el.dataset.gi];return `<b>${x.label}</b><br>${fm(x.v/tot*100,1)} %${HIDE?'':' · '+fm(x.v,0)+' €'}`});
 }
 function renderPort(){
   if(!D)return;
@@ -663,6 +700,8 @@ function renderPort(){
   document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
   ({mos:vMos,tar:vTar,bar:vBar,ani:vAni})[S.pv](items,tot);
   document.querySelectorAll('#ptv [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
+  const PIM={};items.forEach(i=>PIM[i.t]=i);
+  bindTip('#ptv','[data-pos]',el=>{const i=PIM[el.dataset.pos];return i?`<b>${i.t}</b> <span class="k">${i.name||''}</span><br>${fm(i.w*100,1)} % de la cartera${HIDE?'':' · '+fm(i.v,0)+' €'}<br><span class="${cl(i.pygp)}">${pc(i.pygp)}</span> <span class="k">s/ coste</span>`:''});
 }
 let rzT=null;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(D&&!$('#pt').classList.contains('hide')&&S.pv==='mos')renderPort()},200)});
 function renderAll(){renderPos();renderRent();renderDiv();renderCharts();if(!$('#pt').classList.contains('hide'))renderPort()}
