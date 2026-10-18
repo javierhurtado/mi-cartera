@@ -509,7 +509,7 @@ function renderPos(){
   const chips=(key,l,opts,lab)=>`<div class="fg"><span class="k">${l}</span><button data-f="${key}" data-v="" class="${!S[key]?'on':''}">Todos</button>${opts.map(o=>`<button data-f="${key}" data-v="${o}" class="${S[key]===o?'on':''}">${lab?lab(o):o}</button>`).join('')}</div>`;
   const act=[f.fb,f.fp&&flag(f.fp)+' '+f.fp,f.fc&&sym(f.fc)+' '+f.fc].filter(Boolean);
   $('#pf').className=FO?'card':'card pfc';
-  $('#pf').innerHTML=`<div class="xh" id="pfh"><span><b>Filtros</b> <span class="ex">${FO?'▾':'▸'}</span></span><span class="${act.length?'up':'k'}">${act.length?act.join(' · ')+' · ':''}${rows.length} posiciones</span></div>`+(FO?`<div style="margin-top:8px">`+chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+'</div>':'');
+  $('#pf').innerHTML=`<div class="xh" id="pfh"><span><b>Filtros</b> <span class="ex">${FO?'▾':'▸'}</span></span><span class="${act.length&&!FO?'up':'k'}">${act.length&&!FO?act.join(' · ')+' · ':''}${rows.length} posiciones</span></div>`+(FO?`<div style="margin-top:8px">`+chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+'</div>':'');
   $('#pfh').onclick=()=>{FO=!FO;try{localStorage.setItem('fo',FO?'1':'0')}catch(e){}renderPos()};
   document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{S[b.dataset.f]=b.dataset.v;renderPos()});
   if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
