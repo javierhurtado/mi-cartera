@@ -80,7 +80,7 @@ input.q{background:var(--card);color:var(--tx);border:1px solid var(--bd);border
 .hbr:hover,.rowp:hover,.pc2:hover{background:rgba(127,127,127,.1)}.hbr{border-radius:6px;padding:1px 4px}
 html,body{overscroll-behavior-y:none}
 #sbar{position:fixed;top:0;left:0;width:100%;height:max(env(safe-area-inset-top,0px),8px);background:var(--bg);z-index:25}
-#rf svg.spin{animation:rfs .8s linear infinite}@keyframes rfs{to{transform:rotate(360deg)}}
+#ptr{position:fixed;left:50%;margin-left:-13px;top:0;width:26px;height:26px;opacity:0;z-index:5;pointer-events:none;color:var(--mu)}#ptr svg{display:block}#ptr.sp svg{animation:ptrs 1s steps(12) infinite}@keyframes ptrs{to{transform:rotate(360deg)}}
 #gtt{position:fixed;left:0;top:0;z-index:30;max-width:260px;white-space:normal}.tl:hover{filter:brightness(1.12);outline:2px solid var(--ac);z-index:2}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
@@ -141,7 +141,7 @@ svg text{font-family:inherit}
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
 <div id="st" class="hide ov"><div class="card dc" id="stc"></div></div>
 <div id="ft"><span class="note" id="meta"></span></div>
-<div id="sbar"></div><div id="gtt" class="tt hide"></div>
+<div id="sbar"></div><div id="ptr"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="7" transform="rotate(0 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(30 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(60 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(90 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(120 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(150 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(180 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(210 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(240 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(270 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(300 12 12)"/><line x1="12" y1="3" x2="12" y2="7" transform="rotate(330 12 12)"/></svg></div><div id="gtt" class="tt hide"></div>
 <script>
 const $=s=>document.querySelector(s);
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
@@ -612,7 +612,9 @@ function renderCharts(){
   const rec=divModel(),got=[],fc=[];
   for(let m=0;m<12;m++){const g=((rec[Y]||[])[m]||[]);got.push(g.reduce((s,x)=>s+x.a,0));
     let f=0;if(Y>cy||(Y===cy&&m>=cm))held.forEach(e=>{const v=pmv(e,Y,cy,m);if(v>0&&!g.some(x=>x.t===e.t))f+=v*e.acc});fc.push(f)}
-  const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.net});const yl=Object.keys(yrs).sort();
+  const yrs={};D.divs.filter(x=>vis(x.t)).forEach(x=>{const y=x.f.slice(0,4);yrs[y]=(yrs[y]||0)+x.net});const yl=[...new Set([...Object.keys(yrs),String(cy),String(cy+1)])].sort();
+  const projByT=Y=>{const out={};if(Y<cy)return out;held.forEach(e=>{for(let m=0;m<12;m++){if(Y===cy&&m<cm)continue;if(((rec[Y]||[])[m]||[]).some(x=>x.t===e.t))continue;const v=pmv(e,Y,cy,m)*e.acc;if(v>0)out[e.t]=(out[e.t]||0)+v}});return out};
+  const projTot=Y=>Object.values(projByT(Y)).reduce((a,b)=>a+b,0);
   const bt={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(Y)).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.net);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value).slice(0,10);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
@@ -621,7 +623,8 @@ function renderCharts(){
     el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p2;renderRent();renderCharts()})});
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
   CLK['#a1']=i=>showList('Dividendos '+MES[i]+' '+Y,((rec[Y]&&rec[Y][i])||[]).map(x=>({t:x.t,sub:fdate(x.d),val:x.a})));
-  CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})))};
+  CLK['#a2']=i=>{const y=yl[i],m={};D.divs.filter(x=>vis(x.t)&&x.f.startsWith(y)).forEach(x=>m[x.t]=(m[x.t]||0)+x.net);const pj=projByT(+y);
+    showList('Dividendos '+y,Object.entries(m).map(([t,v])=>({t,val:v})).concat(Object.entries(pj).map(([t,v])=>({t,sub:'previsto',val:v}))))};
   const optTrades=(t,tt,f)=>showList(tt,OP.filter(o=>o.t===t&&f(o)).sort((a,b)=>b.f.localeCompare(a.f)).map(o=>({t:o.t,nopos:true,label:o.sym||(o.t+' '+o.tipo+(isFinite(o.k)?' '+o.k:'')),sub:(o.sym?'':'')+o.tipo+(isFinite(o.k)&&o.sym?' · strike '+fm(o.k,o.k%1?2:0):'')+' · venc. '+fdate(o.f),val:o.pyg})));
   const optList=(tt,f)=>{const m={};OP.filter(f).forEach(o=>{(m[o.t]=m[o.t]||{v:0,n:0}).v+=o.pyg;m[o.t].n++});showList(tt,Object.entries(m).map(([t,o])=>({t,op:true,sub:o.n+' contrato'+(o.n>1?'s':''),val:o.v})));
     document.querySelectorAll('#dtc [data-op]').forEach(e=>e.onclick=()=>optTrades(e.dataset.op,e.dataset.op+' · '+tt,f))};
@@ -636,7 +639,7 @@ function renderCharts(){
     document.querySelectorAll(id+' .hbr').forEach(el=>{const t=it[+el.dataset.hi].label;el.style.cursor='pointer';el.onclick=()=>optTrades(t,'Opciones '+t+' · '+Y,o=>fyOf(o)===String(Y))})});
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
   $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+Y+': <b>'+fh(otTot,0)+' €</b></div>');
-  reg('#a2',id=>bars(id,yl,[{name:'Dividendos',color:PAL[1],data:yl.map(y=>yrs[y])}]));
+  reg('#a2',id=>bars(id,yl,[{name:'Cobrado',color:PAL[1],data:yl.map(y=>yrs[y]||0)},{name:'Previsto',color:PAL[2],data:yl.map(y=>projTot(+y))}]));
   reg('#a3',id=>hbars(id,topT));
   reg('#a4',id=>hbars(id,[...ps].sort((a,b)=>b.val-a.val).slice(0,10).map(p=>({t:p.t,label:p.t,value:p.val}))));
   reg('#a5',id=>donut(id,group(ps,p=>p.sector,p=>p.val)));
@@ -776,34 +779,46 @@ $('#cc').onclick=async()=>{await idb.clear();$('#ce').textContent='Caché borrad
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js?v=2').catch(()=>{});
 if(!CFG.url||!CFG.key)showCfg();else load();
 (function(){
-  const rf=document.getElementById('rf');if(!rf)return;
-  const svg=rf.querySelector('svg'),els=()=>[...document.querySelectorAll('#cfgscr,#msg,#app,#ft')];
-  const HOLD=54,THR=90;
-  let off=0,vo=0,tgt=0,ang=0,w=0,mode='idle',dragging=false,raf=0,last=0,y0=0,x0=0,dy=0,act=false,busy=false,stopT=0;
+  const rf=document.getElementById('rf'),pt=document.getElementById('ptr');if(!rf||!pt)return;
+  const svg=rf.querySelector('svg'),els=()=>[...document.querySelectorAll('#cfgscr,#msg,#app,#ft')],tk=[...pt.querySelectorAll('line')];
+  tk.forEach((l,i)=>l.style.opacity=0);
+  const HOLD=56,THR=90,S=0.45;            /* S = grados por ms del giro continuo (360° en 800 ms) */
+  let off=0,vo=0,tgt=0,dragging=false,raf=0,last=0,y0=0,x0=0,dy=0,act=false,busy=false,shown=-1,tb=0,anim=null;
   const top=()=>(document.scrollingElement||document.documentElement).scrollTop<=0;
   const blocked=()=>[...document.querySelectorAll('.ov')].some(o=>!o.classList.contains('hide'));
   const rubber=d=>110*(1-Math.exp(-Math.max(0,d)/150));
-  const apply=()=>{const tr=Math.abs(off)>.05?'translateY('+off.toFixed(2)+'px)':'';els().forEach(e=>e.style.transform=tr);svg.style.transform=ang?'rotate('+ang.toFixed(1)+'deg)':''};
+  const curAng=()=>{const m=getComputedStyle(svg).transform;if(!m||m==='none')return 0;const v=m.match(/matrix\(([^)]+)\)/);if(!v)return 0;const q=v[1].split(',').map(Number);return (Math.atan2(q[1],q[0])*180/Math.PI+360)%360};
+  const ticks=n=>{if(n===shown)return;shown=n;tk.forEach((l,i)=>l.style.opacity=i<n?(0.25+0.75*(i/11)).toFixed(2):0)};
+  const apply=()=>{const tr=Math.abs(off)>.05?'translateY('+off.toFixed(2)+'px)':'';els().forEach(e=>e.style.transform=tr);
+    pt.style.top=(tb+(12+off)/2-13)+'px';pt.style.opacity=Math.max(0,Math.min(1,(off-8)/26));if(!busy)ticks(Math.round(Math.min(1,off/HOLD)*12))};
   const tick=ts=>{raf=0;const dt=Math.min(.033,((ts-last)/1000)||.016);last=ts;let go=dragging;
     if(!dragging){const a=-260*(off-tgt)-20*vo;vo+=a*dt;off+=vo*dt;if(Math.abs(off-tgt)>.3||Math.abs(vo)>4)go=true;else{off=tgt;vo=0}}
-    if(mode==='spin'){w+=(560-w)*Math.min(1,dt*5);ang+=w*dt;go=true}
-    else if(mode==='stop'){const r=stopT-ang;if(r<=.4){ang=stopT;w=0;mode='idle';ang=0}else{w=Math.max(40,r*5.5);ang+=Math.min(r,w*dt);go=true}}
-    else if(mode==='unwind'){ang*=Math.exp(-dt*10);if(Math.abs(ang)<.5){ang=0;mode='idle'}else go=true}
-    apply();if(go)raf=requestAnimationFrame(tick);else{off=0;ang=0;apply()}};
+    apply();if(go)raf=requestAnimationFrame(tick);else{off=0;apply();pt.classList.remove('sp');ticks(0)}};
   const run=()=>{if(!raf){last=performance.now();raf=requestAnimationFrame(tick)}};
+  /* giro del icono con la API de animaciones: sigue fluido aunque el hilo principal esté ocupado pintando */
+  const spinStart=a0=>{if(anim)anim.cancel();svg.style.transform='';
+    const T=500,d=0.5*S*T;
+    anim=svg.animate([{transform:'rotate('+a0+'deg)'},{transform:'rotate('+(a0+d)+'deg)'}],{duration:T,easing:'cubic-bezier(.333,0,.667,.333)',fill:'forwards'});
+    anim.onfinish=()=>{const b=a0+d;anim.cancel();anim=svg.animate([{transform:'rotate('+b+'deg)'},{transform:'rotate('+(b+360)+'deg)'}],{duration:360/S,iterations:Infinity})}};
+  const spinStop=()=>{if(!anim)return;const th=curAng();anim.cancel();anim=null;
+    let r=360-th;if(r<70)r+=360;const T=2*r/S;
+    svg.style.transform='';anim=svg.animate([{transform:'rotate('+th+'deg)'},{transform:'rotate('+(th+r)+'deg)'}],{duration:T,easing:'cubic-bezier(.333,.667,.667,1)'});
+    anim.onfinish=()=>{anim.cancel();anim=null}};
   const start=()=>{if(busy)return;if(!CFG.url||!CFG.key){showCfg();return}
-    busy=true;window.__PTR=true;dragging=false;tgt=HOLD;mode='spin';run();const t0=Date.now();
+    const a0=dragging||dy>0?Math.max(0,dy)*2.4%360:0;
+    busy=true;window.__PTR=true;dragging=false;tgt=HOLD;ticks(12);pt.classList.add('sp');run();spinStart(a0);const t0=Date.now();
     setTimeout(()=>{tgt=0;vo=-30;run()},650);
-    const fin=()=>setTimeout(()=>{window.__PTR=false;mode='stop';stopT=Math.ceil((ang+120)/360)*360;busy=false;run()},Math.max(0,1000-(Date.now()-t0)));
+    const fin=()=>setTimeout(()=>{window.__PTR=false;busy=false;spinStop()},Math.max(0,1000-(Date.now()-t0)));
     const safety=setTimeout(fin,45000);load(()=>{clearTimeout(safety);fin()})};
-  window.refreshData=start;rf.onclick=start;
+  window.refreshData=start;rf.onclick=()=>{dy=0;start()};
   addEventListener('touchstart',e=>{if(busy||e.touches.length!==1||blocked()||!top()){act=false;return}
-    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true;dragging=true;mode='idle';ang=0;off=0;vo=0;tgt=0;run()},{passive:true});
+    y0=e.touches[0].clientY;x0=e.touches[0].clientX;dy=0;act=true;dragging=true;off=0;vo=0;tgt=0;shown=-1;
+    const h=document.querySelector('.top');tb=h?h.getBoundingClientRect().bottom:60;run()},{passive:true});
   addEventListener('touchmove',e=>{if(!act)return;const t=e.touches[0];dy=t.clientY-y0;
-    if(Math.abs(t.clientX-x0)>Math.abs(dy)&&dy>0){act=false;dragging=false;mode='unwind';tgt=0;run();return}
-    off=rubber(dy);ang=Math.max(0,dy)*2.4;run()},{passive:true});
+    if(Math.abs(t.clientX-x0)>Math.abs(dy)&&dy>0){act=false;dragging=false;tgt=0;svg.style.transform='';run();return}
+    off=rubber(dy);svg.style.transform='rotate('+(Math.max(0,dy)*2.4)+'deg)';run()},{passive:true});
   const end=()=>{if(!act)return;act=false;dragging=false;
-    if(dy>THR)start();else{mode='unwind';tgt=0;vo=0;run()}};
+    if(dy>THR)start();else{svg.style.transition='transform .25s';svg.style.transform='';setTimeout(()=>svg.style.transition='',300);tgt=0;vo=0;run()}};
   addEventListener('touchend',end,{passive:true});addEventListener('touchcancel',end,{passive:true});
 })();
 
