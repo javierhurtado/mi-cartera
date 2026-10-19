@@ -57,6 +57,7 @@ select{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-
 tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(127,127,127,.08)}
 tr.sold td{opacity:.6}
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.45);overflow-y:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom));z-index:9}
+body:has(.ov:not(.hide)){overflow:hidden}
 .dc{max-width:960px;margin:0 auto}
 .dh{display:flex;justify-content:space-between;align-items:center;gap:8px}.dh button{flex:none;white-space:nowrap}.dh>b{min-width:0}
 .lg{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:9px;font-weight:700;vertical-align:middle;margin-right:7px;border:1px solid var(--bd);flex:none;overflow:hidden}
