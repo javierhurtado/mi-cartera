@@ -385,7 +385,7 @@ function line(id,series,fmt=pc,W=640){
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
   const H=WX?320:chartH(id,W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
-  const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),rg=y1-y0,mg=Math.pow(10,Math.floor(Math.log10(rg/3))),stp=[1,2,2.5,5,10].map(k=>k*mg).find(v=>rg/v<=4.5)||rg,TK=[];
+  const ya=Math.min(0,...ys),yb=Math.max(...ys,ya+1e-6),rg=yb-ya,mg=Math.pow(10,Math.floor(Math.log10(rg/3))),stp=[1,2,2.5,5,10].map(k=>k*mg).find(v=>rg/v<=4.5)||rg,y0=Math.floor(ya/stp+1e-9)*stp,y1=Math.ceil(yb/stp-1e-9)*stp,TK=[];
   for(let v=Math.ceil(y0/stp-1e-9)*stp;v<=y1+1e-9;v+=stp)TK.push(Math.abs(v)<stp*1e-6?0:v);
   const m=5+Math.max(20,Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*(FS*.6))+8),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-MB-(v-y0)/((y1-y0)||1)*(H-MB-12);
   let g='';TK.forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="5" y="${sy(v)+4}" font-size="${FS}" text-anchor="start" fill="var(--mu)">${fmt(v)}</text>`});
