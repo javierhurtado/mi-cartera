@@ -89,7 +89,7 @@ html,body{overscroll-behavior-y:none}
 .xh{cursor:pointer;display:flex;justify-content:space-between;align-items:center}.xh .ex{color:var(--mu);font-size:15px}
 .card.sc{padding:0}#tp th:first-child,#tp td:first-child{padding-left:14px}#tp th:last-child,#tp td:last-child{padding-right:14px}
 .cw{position:relative}.cw svg{touch-action:pan-y;display:block}
-.tt{position:absolute;top:2px;z-index:3;pointer-events:none;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;line-height:1.5}
+.tt .tr{display:flex;justify-content:space-between;gap:16px}.tt{position:absolute;top:2px;z-index:3;pointer-events:none;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;line-height:1.5}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .pc2{border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;background:var(--card)}
 .pc2 .lg{margin:0}.pc2 .bw{height:6px;border-radius:3px;background:var(--bd);margin:8px 0 6px}.pc2 .bw i{display:block;height:6px;border-radius:3px;background:var(--ac)}
@@ -425,8 +425,8 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
   tipHook($(id),W,(vx,svg)=>{
     const i=Math.floor((vx-mL)/bw);if(vx<mL||i<0||i>=n)return null;
     const h=svg.querySelector('.hl');h.setAttribute('x',mL+i*bw);h.setAttribute('width',bw);
-    const rows=series.filter(s=>!s.ghost).map(s=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fh(s.data[i]||0)}</b></div>`).join('');
-    return{x:mL+i*bw+bw/2,html:`<div class="k">${labels[i]}</div>${rows}${series.length>1?`<div>Total <b>${fh(tot[i])}</b></div>`:''}`}});
+    const rows=series.filter(s=>!s.ghost).map(s=>`<div class="tr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+':':''}</span><b>${fh(s.data[i]||0)}</b></div>`).join('');
+    return{x:mL+i*bw+bw/2,html:`<div class="k">${labels[i]}</div>${rows}${series.length>1?`<div class="tr"><span>Total:</span><b>${fh(tot[i])}</b></div>`:''}`}});
   const oc=CLK[CLKID||id];if(oc)$(id).querySelector('svg').addEventListener('click',ev=>{const sv=$(id).querySelector('svg'),r=sv.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*W,i=Math.floor((vx-mL)/bw);if(vx>=mL&&i>=0&&i<n)oc(i)});
 }
 function hbars(id,items,fmt=n=>fh(n,0)){
@@ -472,7 +472,7 @@ function line(id,series,fmt=pc,W=640){
       let i=lo;if(i>0&&Math.abs(xs[i-1]-t)<Math.abs(xs[i]-t))i--;
       const p=s.pts[i],px=sx(xs[i]);if(ax==null){ax=px;date=p.d}
       dots+=`<circle cx="${px}" cy="${sy(p.v)}" r="3.5" fill="${s.color}" stroke="#fff" stroke-width="1"/>`;
-      rows+=`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fmt(p.v)}</b></div>`});
+      rows+=`<div class="tr"><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+':':''}</span><b>${fmt(p.v)}</b></div>`});
     if(ax==null)return null;
     const c=svg.querySelector('.cur');c.setAttribute('x1',ax);c.setAttribute('x2',ax);c.setAttribute('opacity',1);svg.querySelector('.dots').innerHTML=dots;
     return{x:ax,html:`<div class="k">${fdate(date)}</div>${rows}`}});
