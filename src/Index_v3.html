@@ -12,7 +12,7 @@ main{max-width:1040px;margin:0 auto;padding:16px}
 h1{font-size:20px;margin:0}h2{font-size:15px;margin:0 0 8px}
 .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:nowrap}.top .row{flex-wrap:nowrap;flex:none;gap:6px}.top h1{white-space:nowrap;min-width:0}
 #smeta .u2{display:block}#smeta .u3{display:block}@media(min-width:761px){#smeta .u2{display:inline}#smeta .u2::before{content:' · '}}button.inf{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;min-width:0;padding:0;margin:0 0 0 6px;border:1px solid var(--mu);border-radius:50%;background:transparent;color:var(--mu);font:italic 600 13px/1 Georgia,serif;vertical-align:middle;cursor:pointer}button.inf.hide{display:none}#yrs,#yrs2{position:relative;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}#yrs::-webkit-scrollbar,#yrs2::-webkit-scrollbar{display:none}#yrs button,#yrs2 button{flex:none}
-#bmc{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#bmc::-webkit-scrollbar{display:none}#bmc button{flex:none;white-space:nowrap}#per .oneline{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#per .oneline::-webkit-scrollbar{display:none}#per .oneline button{flex:none;white-space:nowrap;padding:5px 12px;border-radius:999px;font-size:13px}
+#bmc{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}#bmc::-webkit-scrollbar{display:none}#bmc button{flex:none;white-space:nowrap;padding:5px 12px;border-radius:999px;font-size:13px}#per{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}#per::-webkit-scrollbar{display:none}#per button{flex:none;white-space:nowrap}
 #kp .kc{border:0;padding:0;border-radius:0}#kp .kp3{gap:12px}#kp .kp4{gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}#kp .kp4 .kc{padding:0}@media(min-width:1000px){#kp .kp4{border-top:0;padding-top:0;margin-top:0}}#pf.pfc{background:none;border:0;padding:0;margin:-4px 2px 8px;box-shadow:none}#pf.pfc #pfh{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;padding:2px 0}#ft{margin-top:22px;text-align:center}#pfh{padding:2px 0}
 nav,.chips{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}nav::-webkit-scrollbar{display:none}nav button{flex:none;white-space:nowrap}
@@ -104,7 +104,8 @@ svg text{font-family:inherit}
 <section id="pt" class="hide"><div class="card" id="ptc"></div></section>
 
 <section id="rent" class="hide">
- <div class="card"><div class="chips" id="per"></div><div class="grid" id="kr"></div></div>
+ <div class="chips" id="per"></div>
+ <div class="card"><div class="grid" id="kr"></div></div>
  <div class="card"><h2>TWR acumulado</h2><div id="bmc" class="oneline bmc"></div><div id="bmn" class="note hide"></div><div id="ch1" class="sc"></div></div>
  <div class="card"><h2>Valor de la cartera vs. aportación neta</h2><div id="ch2" class="sc"></div></div>
  <div class="card" id="hs"></div>
@@ -536,12 +537,8 @@ function drawTwr(r,again){
   line('#ch1',ser);
 }
 function renderRent(){
-  const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);
-  const srcB=`<button data-s="hist" class="${S.src==='hist'?'on':''}">Desde inicio${hasH?'':' (sin histórico)'}</button>`+(SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}" title="Desde ${SERR[0].d}">Registrado</button>`:'');
-  $('#per').style.display='block';
-  $('#per').innerHTML=`<div class="oneline">${srcB}</div><div class="oneline">`+PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('')+'</div>';
+  $('#per').innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{S.per=b.dataset.p;renderRent()});
-  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.src=b.dataset.s;S.per='all';renderRent();renderCharts()});
   if(!ser().length){$('#kr').innerHTML='<div class="k">Sin datos.</div>';return}
   if(!windowStart(S.per)&&S.per!=='all')S.per='all';
   const r=perf(S.per),inc=r.yrs>=1;
@@ -769,6 +766,7 @@ function openSettings(){
   $('#stc').innerHTML=`<div class="dh"><b style="font-size:17px">⚙ Ajustes</b><button id="sx">✕ Cerrar</button></div>
   <div class="row" style="margin:12px 0;flex-wrap:nowrap"><button id="s-eye" class="ib ${HIDE?'on':''}" style="white-space:nowrap">${eyeSvg(false)} Ocultar importes</button></div>
   <div class="fg fgl" style="margin-bottom:8px"><span class="k">Tema</span><div class="fs"><button data-th="" class="${!THEME?'on':''}">Automático</button><button data-th="light" class="${THEME==='light'?'on':''}">Claro</button><button data-th="dark" class="${THEME==='dark'?'on':''}">Oscuro</button></div></div>
+  ${(()=>{const hasH=D.hist&&Object.values(D.hist.px).some(o=>o.pts.length);return `<div class="fg fgl" style="margin-bottom:8px"><span class="k">Rentabilidad</span><div class="fs"><button data-s="hist" class="${S.src==='hist'?'on':''}">Calculada${hasH?'':' (sin histórico)'}</button>${SERR.length?`<button data-s="rend" class="${S.src==='rend'?'on':''}" title="Desde ${SERR[0].d}">Registrada</button>`:''}</div></div>`})()}
   <h2>Posiciones visibles <button id="vinfo" class="inf" aria-label="Información">i</button></h2>
   <div class="note hide" id="vnote" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
   <div class="row" style="margin-bottom:6px"><input class="q" id="sq" placeholder="Buscar ticker o nombre…"><button id="sall">Mostrar todas</button></div>
@@ -779,6 +777,7 @@ function openSettings(){
   $('#sx').onclick=()=>$('#st').classList.add('hide');
   $('#s-eye').onclick=toggleHide;
   document.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{setTheme(b.dataset.th);document.querySelectorAll('[data-th]').forEach(x=>x.classList.toggle('on',x===b))});
+  document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{S.src=b.dataset.s;S.per='all';document.querySelectorAll('[data-s]').forEach(x=>x.classList.toggle('on',x===b));renderRent();renderCharts()});
   $('#sq').oninput=e=>{const q=e.target.value.toLowerCase().trim();document.querySelectorAll('#sl .pk').forEach(l=>l.classList.toggle('hide',!!q&&!l.dataset.q.includes(q)))};
   $('#sall').onclick=()=>{HID.clear();sv();updMeta();document.querySelectorAll('#sl input').forEach(i=>i.checked=true);renderAll()};
   document.querySelectorAll('#sl input').forEach(i=>i.onchange=()=>{if(i.checked)HID.delete(i.dataset.h);else HID.add(i.dataset.h);sv();updMeta();renderAll()});
