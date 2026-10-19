@@ -62,7 +62,7 @@ body:has(.ov:not(.hide)){overflow:hidden}
 .dh{display:flex;justify-content:space-between;align-items:center;gap:8px}.dh button{flex:none;white-space:nowrap}.dh>b{min-width:0}
 .lg{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:9px;font-weight:700;vertical-align:middle;margin-right:7px;border:1px solid var(--bd);flex:none;overflow:hidden}
 .fg{display:flex;gap:6px;align-items:center;overflow-x:auto;white-space:nowrap;padding:2px 0 6px;-webkit-overflow-scrolling:touch}
-.fg .k{min-width:54px;position:sticky;left:0;z-index:2;background:var(--card);align-self:stretch;display:flex;align-items:center;box-shadow:6px 0 6px -2px var(--card)}
+.fg .k{min-width:54px}.fgl{overflow:hidden}.fgl .fs{display:flex;gap:6px;align-items:center;overflow-x:auto;white-space:nowrap;flex:1;min-width:0;-webkit-overflow-scrolling:touch;scrollbar-width:none}.fgl .fs::-webkit-scrollbar{display:none}
 .fg button{padding:5px 12px;border-radius:999px;font-size:13px;flex:none}
 .big{font-size:26px;font-weight:700}
 .tile{border:1px solid var(--bd);border-radius:10px;padding:10px}
@@ -536,7 +536,7 @@ function renderPos(){
   rows.sort((a,b)=>{let x=a[k],y=b[k];
     if(str)return String(x||'').localeCompare(String(y||''),'es')*dir;
     x=(x==null||!isFinite(x))?-Infinity*dir:x;y=(y==null||!isFinite(y))?-Infinity*dir:y;return (x-y)*dir||0});
-  const chips=(key,l,opts,lab)=>`<div class="fg"><span class="k">${l}</span><button data-f="${key}" data-v="" class="${!S[key]?'on':''}">Todos</button>${opts.map(o=>`<button data-f="${key}" data-v="${o}" class="${S[key]===o?'on':''}">${lab?lab(o):o}</button>`).join('')}</div>`;
+  const chips=(key,l,opts,lab)=>`<div class="fg fgl"><span class="k">${l}</span><div class="fs"><button data-f="${key}" data-v="" class="${!S[key]?'on':''}">Todos</button>${opts.map(o=>`<button data-f="${key}" data-v="${o}" class="${S[key]===o?'on':''}">${lab?lab(o):o}</button>`).join('')}</div></div>`;
   const act=[f.fb,f.fp&&flag(f.fp)+' '+f.fp,f.fc&&sym(f.fc)+' '+f.fc].filter(Boolean);
   $('#pf').className=FO?'card':'card pfc';
   $('#pf').innerHTML=`<div class="xh" id="pfh"><span><b>Filtros</b> <span class="ex">${FO?'▾':'▸'}</span></span><span class="${act.length&&!FO?'up':'k'}">${act.length&&!FO?act.join(' · ')+' · ':''}${rows.length} posiciones</span></div>`+(FO?`<div style="margin-top:8px">`+chips('fb','Broker',brokers)+chips('fp','País',paises,o=>flag(o)+' '+o)+chips('fc','Divisa',divisas,o=>sym(o)+' '+o)+'</div>':'');
@@ -812,8 +812,8 @@ function renderPort(){
   if(!D)return;
   const items=portItems(),tot=items.reduce((s,i)=>s+i.v,0);
   const chips=(arr,key)=>arr.map(([k,l])=>`<button data-pp="${key}|${k}" class="${S[key]===k?'on':''}">${l}</button>`).join('');
-  $('#ptc').innerHTML=`<div class="fg"><span class="k">Estilo</span>${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo']],'pv')}</div>
-   <div class="fg"><span class="k">Agrupar</span>${chips(PG,'pg')}</div>${S.pv==='mos'?`<div class="fg"><span class="k">Color</span>${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div>`:''}
+  $('#ptc').innerHTML=`<div class="fg fgl"><span class="k">Estilo</span><div class="fs">${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo']],'pv')}</div></div>
+   <div class="fg fgl"><span class="k">Agrupar</span><div class="fs">${chips(PG,'pg')}</div></div>${S.pv==='mos'?`<div class="fg fgl"><span class="k">Color</span><div class="fs">${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div></div>`:''}
    <div id="ptv"></div>`;
   document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
   ({mos:vMos,tar:vTar,bar:vBar,ren:vRen,ani:vAni})[S.pv](items,tot);
@@ -832,7 +832,7 @@ function openSettings(){
   const ps=[...D.positions].sort((a,b)=>String(a.t).localeCompare(b.t));
   $('#stc').innerHTML=`<div class="dh"><b style="font-size:17px">⚙ Ajustes</b><button id="sx">✕ Cerrar</button></div>
   <div class="row" style="margin:12px 0;flex-wrap:nowrap"><button id="s-eye" class="ib ${HIDE?'on':''}" style="white-space:nowrap">${eyeSvg(false)} Ocultar importes</button><button id="s-conn" style="white-space:nowrap">🔌 Conexión</button></div>
-  <div class="fg" style="margin-bottom:8px"><span class="k">Tema</span><button data-th="" class="${!THEME?'on':''}">Automático</button><button data-th="light" class="${THEME==='light'?'on':''}">Claro</button><button data-th="dark" class="${THEME==='dark'?'on':''}">Oscuro</button></div>
+  <div class="fg fgl" style="margin-bottom:8px"><span class="k">Tema</span><div class="fs"><button data-th="" class="${!THEME?'on':''}">Automático</button><button data-th="light" class="${THEME==='light'?'on':''}">Claro</button><button data-th="dark" class="${THEME==='dark'?'on':''}">Oscuro</button></div></div>
   <h2>Posiciones visibles <button id="vinfo" class="inf" aria-label="Información">i</button></h2>
   <div class="note hide" id="vnote" style="margin:0 0 8px">Las desmarcadas desaparecen de Cartera, Composición, Gráficos y Dividendos, y los % se recalculan sobre el resto. Rentabilidad (TWR/MWR) y los totales de Cuadre no cambian. Útil para compartir capturas.</div>
   <div class="row" style="margin-bottom:6px"><input class="q" id="sq" placeholder="Buscar ticker o nombre…"><button id="sall">Mostrar todas</button></div>
