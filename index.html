@@ -36,7 +36,7 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:860px){.g2 .leg{margin-top:10px;padding-right:4px}}
+@media(min-width:860px){.g2 .cb>.leg{margin-top:auto;padding:10px 4px 0 0}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .g2>.card:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
