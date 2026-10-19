@@ -37,6 +37,7 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:860px){.g2>.card.ch .cb{contain:size;min-height:230px;justify-content:flex-start}}
 .g2>.card:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
 .g2>.card{margin:0;display:flex;flex-direction:column;min-width:0}.cb{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}.cb>*{width:100%}
@@ -363,7 +364,14 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
   el.addEventListener('pointerleave',hideTip)})}
 if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
-function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel)}
+const RO={},WIDE='(min-width:860px)',isWide=()=>typeof matchMedia==='function'&&matchMedia(WIDE).matches;
+function chartH(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
+function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel);
+  if(RO[sel]){try{RO[sel].disconnect()}catch(e){}delete RO[sel]}
+  const el=$(sel);if(el&&el.closest&&el.closest('.ch')&&isWide()&&typeof ResizeObserver==='function'){
+    let lw=el.clientWidth,lh=el.clientHeight,tm;
+    RO[sel]=new ResizeObserver(()=>{clearTimeout(tm);tm=setTimeout(()=>{const w=el.clientWidth,h=el.clientHeight;if(Math.abs(w-lw)>4||Math.abs(h-lh)>4){lw=w;lh=h;CLKID=null;CHF[sel]&&CHF[sel](sel)}},120)});
+    RO[sel].observe(el)}}
 function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML='';$('#xt').textContent=title;$('#xv').classList.remove('hide');
   WX=Math.round(Math.min(900,Math.max(340,innerWidth-48)));CLKID=sel;try{fn('#xc')}finally{WX=0;CLKID=null}}
 function bindPos(root){document.querySelectorAll(root+' [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos))}
@@ -393,7 +401,7 @@ function tipHook(root,W,fn){
   svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
 }
 function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
-  W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:200,mB=22,mT=8,n=labels.length,ph=H-mB-mT;
+  W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:chartH(id,200),mB=22,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
   const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*6.2)+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
@@ -430,7 +438,7 @@ function line(id,series,fmt=pc,W=640){
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
-  const H=WX?320:(W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
+  const H=WX?320:chartH(id,W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
   const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),rg=y1-y0,mg=Math.pow(10,Math.floor(Math.log10(rg/3))),stp=[1,2,2.5,5,10].map(k=>k*mg).find(v=>rg/v<=4.5)||rg,TK=[];
   for(let v=Math.ceil(y0/stp-1e-9)*stp;v<=y1+1e-9;v+=stp)TK.push(Math.abs(v)<stp*1e-6?0:v);
   const m=Math.max(W<500?44:52,Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*6.2)+10),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
@@ -667,7 +675,7 @@ function renderCharts(){
   const bt={};D.divs.filter(x=>vis(x.t)&&(ALL||x.f.startsWith(Y))).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.gross);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
-  $('#grs').innerHTML=[['Dividendos por mes · '+YL,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+YL,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+YL,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
+  $('#grs').innerHTML=[['Dividendos por mes · '+YL,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+YL,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+YL,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card${['a1','a2','a9','a10','a12'].includes(id)?' ch':''}"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
   if(ser().length)document.querySelectorAll('.pp').forEach(el=>{el.innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
     el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{const y=window.scrollY,gs=$('#grs');gs.style.minHeight=gs.offsetHeight+'px';S.per=b.dataset.p2;renderRent();renderCharts();window.scrollTo(0,y);requestAnimationFrame(()=>{window.scrollTo(0,y);setTimeout(()=>{gs.style.minHeight='';window.scrollTo(0,y)},350)})})});
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
