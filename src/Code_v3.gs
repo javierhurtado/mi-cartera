@@ -497,9 +497,9 @@ function loadAll(fresh) {
     lots: st.lots, movs: st.movs, opc: st.opc, skipped: st.skipped, tipos: st.tipos,
     divs: st.divs, rend, emp, syms: st.syms, hist,
     today: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
-    divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión',
-    timing: T
+    divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión'
   };
+  console.log('loadAll ' + (T.total / 1000).toFixed(1) + ' s · caché ' + T.cache + '\n' + Object.keys(T.ms).map(k => k + ' ' + T.ms[k] + ' ms').join(' · '));
   // Como texto JSON: evita que google.script.run devuelva null por NaN/Date/etc. (NaN pasa a null)
   return JSON.stringify(res);
 }

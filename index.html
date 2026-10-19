@@ -218,7 +218,7 @@ const EX={'BME:':'.MC','LON:':'.L','ETR:':'.DE','EPA:':'.PA','AMS:':'.AS','BIT:'
 const LGSEEN=new Set(),TVSEEN=new Set();let TVERR='',TVTRY=0,LGN=0,LGTOT=0,LGERR='',LGSTART=false,META='';
 const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
-function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+(HID.size>1?' ocultas':' oculta'):'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(TIMING?'<span class="u3">'+e(TIMING)+'</span>':'')+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
+function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+(HID.size>1?' ocultas':' oculta'):'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
 function addLogos(map,tv){
   let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/cover no-repeat;color:transparent}'});
   const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
@@ -266,7 +266,7 @@ function load(done){
       if(!window.__CACHED){LOADMS=Date.now()-T0;LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
       if(!(window.__CACHED)){$('#upd').dataset.b=''}
       updTxt(!!window.__CACHED);
-      META=D.lots.length+' lotes · '+D.divs.length+' div.';TIMING=(LOADMS?'carga '+(LOADMS/1000).toFixed(1).replace('.',',')+' s':'')+(D.timing?' · servidor '+(D.timing.total/1000).toFixed(1).replace('.',',')+' s (caché '+D.timing.cache+': '+Object.entries(D.timing.ms).map(([k,v])=>k+' '+v).join(', ')+' ms)':'');updMeta();
+      META=D.lots.length+' lotes · '+D.divs.length+' div.';updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
