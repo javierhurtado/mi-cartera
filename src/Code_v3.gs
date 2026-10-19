@@ -38,7 +38,7 @@ function doGet(e) {
     const key = PropertiesService.getScriptProperties().getProperty('API_KEY');
     if (!key || p.k !== key) return out_({ error: 'No autorizado' });
     try {
-      if (p.a === 'loadAll') return out_(loadAll());
+      if (p.a === 'loadAll') return out_(loadAll(p.s === '1'));
       if (p.a === 'loadLogos') return out_(loadLogos(+p.s || 0));
       if (p.a === 'loadTvLogos') return out_(loadTvLogos());
       if (p.a === 'loadBench') return out_(loadBench());
@@ -436,15 +436,59 @@ function readHist_(lots, emp, tz) {
   return { px, fx, stale, missing, noEmp };
 }
 
+/* ---------- Caché de la parte "fija" (nada que dependa de la cotización) ----------
+ * Se guardan operaciones, lotes, opciones, dividendos cobrados y símbolos: solo cambian cuando editas la hoja.
+ * Cartera (precios, valor, PyG), Rend., Emp. (incluye divisas) e histórico de precios se leen SIEMPRE en vivo.
+ * La caché se descarta sola a los 30 min, si cambia el tamaño de las pestañas, o al pulsar actualizar (fresh). */
+const CACHE_TTL_ = 1800, CACHE_CHUNK_ = 30000;
+function cacheGet_(k) {
+  try {
+    const c = CacheService.getScriptCache(), n = +c.get(k + '#n');
+    if (!n) return null;
+    const keys = []; for (let i = 0; i < n; i++) keys.push(k + '#' + i);
+    const m = c.getAll(keys); let s = '';
+    for (let i = 0; i < n; i++) { const p = m[k + '#' + i]; if (p == null) return null; s += p; }
+    return s;
+  } catch (e) { return null; }
+}
+function cachePut_(k, s) {
+  try {
+    const c = CacheService.getScriptCache(), o = {}; let n = 0;
+    for (let i = 0; i < s.length; i += CACHE_CHUNK_) o[k + '#' + (n++)] = s.slice(i, i + CACHE_CHUNK_);
+    o[k + '#n'] = String(n);
+    c.putAll(o, CACHE_TTL_);
+  } catch (e) {}
+}
+function cacheClear() {   // por si quieres vaciarla a mano desde el editor
+  const c = CacheService.getScriptCache(), n = +c.get('static#n') || 0, keys = ['static#n'];
+  for (let i = 0; i < n; i++) keys.push('static#' + i);
+  c.removeAll(keys);
+}
+function staticSig_(ss) {
+  return [CONFIG.OPER, CONFIG.DIV, 'Opc.'].map(n => { const sh = ss.getSheetByName(n); return sh ? sh.getLastRow() + 'x' + sh.getLastColumn() : '0'; }).join('|');
+}
+function readStatic_(ss, tz, fresh) {
+  const sig = staticSig_(ss);
+  if (!fresh) {
+    const t = cacheGet_('static');
+    if (t) { try { const o = JSON.parse(t); if (o.sig === sig) return o.d; } catch (e) {} }
+  }
+  const op = readOper_(ss, tz);
+  const d = { lots: op.lots, movs: op.movs, skipped: op.skipped, tipos: op.tipos, opc: readOpc_(ss, tz), divs: readDiv_(ss, tz), syms: readSyms_() };
+  cachePut_('static', JSON.stringify({ sig, d }));
+  return d;
+}
+
 /* ---------- Punto de entrada ---------- */
-function loadAll() {
+function loadAll(fresh) {
   const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), tz = ss.getSpreadsheetTimeZone();
-  const car = readCartera_(ss), op = readOper_(ss, tz), emp = readEmp_(ss, tz);
+  const st = readStatic_(ss, tz, !!fresh);
+  const car = readCartera_(ss), emp = readEmp_(ss, tz);
   const res = {
     positions: car.positions, totals: car.totals,
-    lots: op.lots, movs: op.movs, opc: readOpc_(ss, tz), skipped: op.skipped, tipos: op.tipos,
-    divs: readDiv_(ss, tz), rend: readRend_(ss, tz), emp, syms: readSyms_(),
-    hist: readHist_(op.lots, emp, tz),
+    lots: st.lots, movs: st.movs, opc: st.opc, skipped: st.skipped, tipos: st.tipos,
+    divs: st.divs, rend: readRend_(ss, tz), emp, syms: st.syms,
+    hist: readHist_(st.lots, emp, tz),
     today: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
     divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión'
   };

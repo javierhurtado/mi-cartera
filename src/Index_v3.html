@@ -206,7 +206,7 @@ function load(done){
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
-  .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll();
+  .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll(done?1:0);
 }
 function buildHist(){
   $('#hs').innerHTML='<b>Construyendo histórico de precios…</b><div class="note">Puede tardar de 1 a 2 minutos la primera vez (GOOGLEFINANCE calcula en tu hoja).</div>';
