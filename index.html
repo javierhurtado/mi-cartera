@@ -364,7 +364,7 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
 if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
 const RO={},WIDE='(min-width:860px)',isWide=()=>typeof matchMedia==='function'&&matchMedia(WIDE).matches;
-function chartH(id,def){return isWide()&&!WX?Math.max(def,300):def}
+function chartH(id,def){if(WX||!isWide())return def;const el=$(id);return el&&el.closest&&el.closest('.ch')?Math.max(def,300):Math.max(def,400)}
 function chartH_old(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel);
   if(RO[sel]){try{RO[sel].disconnect()}catch(e){}delete RO[sel]}
@@ -435,7 +435,9 @@ function fitText(svg,W){
   const go=()=>{const r=svg.getBoundingClientRect().width;if(!r||!W)return;const k=W/r;svg.querySelectorAll('text').forEach(t=>{if(!t.dataset)return;const b=+(t.dataset.fs||t.getAttribute('font-size')||10);t.dataset.fs=b;t.style.fontSize=(b*k).toFixed(2)+'px'})};
   go();if(typeof ResizeObserver==='function'){try{new ResizeObserver(go).observe(svg)}catch(e){}}
 }
+var LR={};
 function line(id,series,fmt=pc,W=640){
+  const series0=series,W0=W;
   const FS=isWide()?12:10,MB=FS+12;
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
@@ -451,6 +453,8 @@ function line(id,series,fmt=pc,W=640){
   g+=`<line class="cur" x1="0" x2="0" y1="6" y2="${H-MB}" stroke="var(--mu)" stroke-dasharray="3 3" opacity="0"/><g class="dots"></g>`;
   $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
   fitText($(id).querySelector('svg'),W);
+  if(!WX&&!($(id).closest&&$(id).closest('.ch'))&&typeof ResizeObserver==='function'&&!(RO[id]||{}).line){const el=$(id);let lw=el.clientWidth;const o=new ResizeObserver(()=>{if(Math.abs(el.clientWidth-lw)>4&&el.clientWidth>0){lw=el.clientWidth;LR[id]&&LR[id]()}});o.observe(el);RO[id]={line:1,disconnect(){o.disconnect()}}}
+  LR[id]=()=>line(id,series0,fmt,W0);
   const XS=series.map(s=>s.pts.map(p=>new Date(p.d).getTime()));
   tipHook($(id),W,(vx,svg)=>{
     if(vx<m||vx>W-6)return null;
