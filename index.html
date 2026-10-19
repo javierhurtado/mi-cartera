@@ -56,7 +56,7 @@ select{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.sep{width:1px;height:22px;background:var(--bd);margin:0 4px}
 tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(127,127,127,.08)}
 tr.sold td{opacity:.6}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);overflow-y:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom));z-index:9}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);overflow-y:auto;outline:none;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(16px + env(safe-area-inset-bottom));z-index:9}
 body:has(.ov:not(.hide)){overflow:hidden}
 .dc{max-width:960px;margin:0 auto}
 .dh{display:flex;justify-content:space-between;align-items:center;gap:8px}.dh button{flex:none;white-space:nowrap}.dh>b{min-width:0}
@@ -904,4 +904,11 @@ if(!CFG.url||!CFG.key)showCfg();else load();
   addEventListener('touchend',end,{passive:true});addEventListener('touchcancel',end,{passive:true});
 })();
 
+/* Al abrir un panel, el foco pasa a él para que las teclas (flechas, espacio, Esc) actúen sobre el panel y no sobre la página de detrás */
+(function(){try{
+  const ovs=()=>document.querySelectorAll('.ov');
+  const open=el=>{if(!el.classList.contains('hide')){el.setAttribute('tabindex','-1');try{el.focus({preventScroll:true})}catch(e){}}};
+  if(typeof MutationObserver==='function')ovs().forEach(el=>new MutationObserver(()=>open(el)).observe(el,{attributes:true,attributeFilter:['class']}));
+  document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const o=[...ovs()].filter(x=>!x.classList.contains('hide')).pop();if(o)o.classList.add('hide')});
+}catch(e){}})();
 </script></main></body></html>
