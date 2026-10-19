@@ -37,7 +37,6 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(min-width:860px){.g2>.card.ch .cb{contain:size;min-height:230px;justify-content:flex-start}}
 .g2>.card:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
 .g2>.card{margin:0;display:flex;flex-direction:column;min-width:0}.cb{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}.cb>*{width:100%}
@@ -105,7 +104,7 @@ html,body{overscroll-behavior-y:none}
 .it{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:2px 0}
 .it.f{opacity:.75}.it.f .a{color:var(--fc)}
 svg text{font-family:inherit}
-.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
+.leg{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
 </style></head><body><main>
 <div class="top"><h1><img src="apple-touch-icon.png" alt="" style="width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:8px">Cartera</h1><div class="row"><button id="rf" class="ib" title="Actualizar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
@@ -218,7 +217,7 @@ const lgKey=t=>'lg'+String(t).replace(/[^A-Za-z0-9]/g,'_');
 const logo=(t,c,z)=>`<span class="lg ${c||''} ${lgKey(t)}"${z?` style="width:${z}px;height:${z}px;font-size:${Math.max(7,Math.round(z*.36))}px;margin:0"`:''}>${String(t).slice(0,2)}</span>`;
 function updMeta(){const T=META+(LGERR?' · logos: '+LGERR:(LGTOT?' · logos '+LGN+'/'+LGTOT:''))+(TVSEEN.size?' · TV '+TVSEEN.size:'')+(TVERR?' · TV: '+TVERR:'')+(HID.size?' · '+HID.size+(HID.size>1?' ocultas':' oculta'):'');$('#meta').textContent=T;const sm=$('#smeta');if(sm){const e=x=>String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;'),u=$('#upd');sm.innerHTML=e(T)+(u&&u.textContent&&u.textContent!=='Actualizando…'?'<span class="u2">'+e(u.textContent)+'</span>':'')}}
 function addLogos(map,tv){
-  let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/contain no-repeat;color:transparent}'});
+  let css='';Object.keys(map).forEach(k=>{css+='.'+lgKey(k)+'{background:#fff url("'+map[k]+'") center/cover no-repeat;color:transparent}'});
   const sid=tv?'lgcss2':'lgcss';let st=document.getElementById(sid);if(!st){st=document.createElement('style');st.id=sid;document.head.appendChild(st)}
   st.appendChild(document.createTextNode(css));
 }
@@ -365,12 +364,13 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
 if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
 const RO={},WIDE='(min-width:860px)',isWide=()=>typeof matchMedia==='function'&&matchMedia(WIDE).matches;
-function chartH(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
+function chartH(id,def){return isWide()&&!WX?Math.max(def,260):def}
+function chartH_old(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel);
   if(RO[sel]){try{RO[sel].disconnect()}catch(e){}delete RO[sel]}
   const el=$(sel);if(el&&el.closest&&el.closest('.ch')&&isWide()&&typeof ResizeObserver==='function'){
     let lw=el.clientWidth,lh=el.clientHeight,tm;
-    RO[sel]=new ResizeObserver(()=>{clearTimeout(tm);tm=setTimeout(()=>{const w=el.clientWidth,h=el.clientHeight;if(Math.abs(w-lw)>4||Math.abs(h-lh)>4){lw=w;lh=h;CLKID=null;CHF[sel]&&CHF[sel](sel)}},120)});
+    RO[sel]=new ResizeObserver(()=>{clearTimeout(tm);tm=setTimeout(()=>{const w=el.clientWidth,h=el.clientHeight;if(Math.abs(w-lw)>4){lw=w;lh=h;CLKID=null;CHF[sel]&&CHF[sel](sel)}},120)});
     RO[sel].observe(el)}}
 function expand(sel,title){const fn=CHF[sel];if(!fn)return;$('#xc').innerHTML='';$('#xt').textContent=title;$('#xv').classList.remove('hide');
   WX=Math.round(Math.min(900,Math.max(340,innerWidth-48)));CLKID=sel;try{fn('#xc')}finally{WX=0;CLKID=null}}
@@ -401,16 +401,17 @@ function tipHook(root,W,fn){
   svg.addEventListener('pointerleave',ev=>{if(ev.pointerType==='mouse')off()});
 }
 function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
+  const FS=isWide()?14:10;
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:chartH(id,200),mB=22,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
-  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*6.2)+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
+  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*(FS*.62))+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
-  lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="${mL-4}" y="${y+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
+  lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="${mL-4}" y="${y+4}" font-size="${FS}" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   labels.forEach((l,i)=>{let yp=Y(0),yn=Y(0);
     series.forEach(s=>{const v=s.data[i]||0,h=Math.abs(v)*sc,col=(series.length===1&&v<0)?'#d93025':s.color;
       if(v>0){yp-=h;g+=`<rect x="${mL+i*bw+bw*.15}" y="${yp}" width="${bw*.7}" height="${h}" fill="${col}"/>`}
       else if(v<0){g+=`<rect x="${mL+i*bw+bw*.15}" y="${yn}" width="${bw*.7}" height="${h}" fill="${col}"/>`;yn+=h}});
-    g+=`<text x="${mL+i*bw+bw/2}" y="${H-7}" font-size="${n>8?9:10}" text-anchor="middle" fill="var(--mu)">${l}</text>`});
+    g+=`<text x="${mL+i*bw+bw/2}" y="${H-7}" font-size="${n>8?FS-1:FS}" text-anchor="middle" fill="var(--mu)">${l}</text>`});
   g+=`<rect class="hl" x="0" y="${mT}" width="0" height="${ph}" fill="var(--ac)" opacity=".1"/>`;
   $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
   fitText($(id).querySelector('svg'),W);
@@ -435,17 +436,18 @@ function fitText(svg,W){
   go();if(typeof ResizeObserver==='function'){try{new ResizeObserver(go).observe(svg)}catch(e){}}
 }
 function line(id,series,fmt=pc,W=640){
+  const FS=isWide()?14:10;
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));
   series=series.map(s=>({...s,pts:s.pts.filter(p=>p.v!=null&&isFinite(p.v))}));
   const all=series.flatMap(s=>s.pts);if(all.length<2){$(id).innerHTML='<div class="note">No hay datos suficientes.</div>';return}
   const H=WX?320:chartH(id,W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
   const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),rg=y1-y0,mg=Math.pow(10,Math.floor(Math.log10(rg/3))),stp=[1,2,2.5,5,10].map(k=>k*mg).find(v=>rg/v<=4.5)||rg,TK=[];
   for(let v=Math.ceil(y0/stp-1e-9)*stp;v<=y1+1e-9;v+=stp)TK.push(Math.abs(v)<stp*1e-6?0:v);
-  const m=Math.max(W<500?44:52,Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*6.2)+10),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
-  let g='';TK.forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="${m-4}" y="${sy(v)+4}" font-size="10" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
+  const m=Math.max(W<500?44:52,Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*(FS*.62))+10),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-22-(v-y0)/((y1-y0)||1)*(H-34);
+  let g='';TK.forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="${m-4}" y="${sy(v)+4}" font-size="${FS}" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   if(y0<0)g+=`<line x1="${m}" x2="${W-6}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--mu)" stroke-dasharray="3 3"/>`;
   series.forEach(s=>g+=`<polyline points="${s.pts.map(p=>sx(new Date(p.d).getTime()).toFixed(1)+','+sy(p.v).toFixed(1)).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2"/>`);
-  g+=`<text x="${m}" y="${H-5}" font-size="10" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d<a?p.d:a,'9999'))}</text><text x="${W-6}" y="${H-5}" font-size="10" text-anchor="end" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d>a?p.d:a,''))}</text>`;
+  g+=`<text x="${m}" y="${H-5}" font-size="${FS}" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d<a?p.d:a,'9999'))}</text><text x="${W-6}" y="${H-5}" font-size="${FS}" text-anchor="end" fill="var(--mu)">${fdate(all.reduce((a,p)=>p.d>a?p.d:a,''))}</text>`;
   g+=`<line class="cur" x1="0" x2="0" y1="6" y2="${H-22}" stroke="var(--mu)" stroke-dasharray="3 3" opacity="0"/><g class="dots"></g>`;
   $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
   fitText($(id).querySelector('svg'),W);
@@ -696,7 +698,7 @@ function renderCharts(){
   reg('#a11',id=>{const it=Object.entries(ot).map(([t,v])=>({t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,WX?1e9:10);hbars(id,it);
     document.querySelectorAll(id+' .hbr').forEach(el=>{const t=it[+el.dataset.hi].label;el.style.cursor='pointer';el.onclick=()=>optTrades(t,'Opciones '+t+' · '+YL,o=>ALL||fyOf(o)===String(Y))})});
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
-  $('#a11').insertAdjacentHTML('beforeend','<div class="note">Total '+YL+': <b>'+fh(otTot,0)+' €</b></div>');
+  {const h=document.querySelector('.xh[data-x="a11"]');if(h&&!h.querySelector('.otot'))h.insertAdjacentHTML('afterbegin','<span class="otot k" style="float:right;font-weight:400">Total '+YL+': <b>'+fh(otTot,0)+' €</b></span>')}
   reg('#a2',id=>bars(id,yl,[{name:'Cobrado',color:PAL[1],data:yl.map(y=>yrs[y]||0)},{name:'Previsto',color:PAL[2],data:yl.map(y=>projTot(+y))}]));
   reg('#a3',id=>hbars(id,WX?topT:topT.slice(0,10)));
   reg('#a4',id=>hbars(id,[...ps].sort((a,b)=>b.val-a.val).slice(0,WX?1e9:10).map(p=>({t:p.t,label:p.t,value:p.val}))));
