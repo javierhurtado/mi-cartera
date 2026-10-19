@@ -119,7 +119,7 @@ function readCartera_(ss) {
     positions.push({ t, q, pmc: num_(row[C.pmc]), px: num_(row[C.px]), chg: chg_(row[C.chg]), ccy: row[C.ccy], cost: num_(row[C.cost]),
       val: num_(row[C.val]), pyg: num_(row[C.pyg]), div: num_(row[C.div]) || 0, sector: row[C.sector] || '', sub: row[C.sub] || '' });
   }
-  const g = a => num_(sh.getRange(a).getValue());
+  const g = a => { const m = /^([A-Z]+)(\d+)$/.exec(a); let c = 0; for (const ch of m[1]) c = c * 26 + ch.charCodeAt(0) - 64; const row = vals[+m[2] - 1]; return num_(row ? row[c - 1] : ''); };
   const totals = { valor: g(CONFIG.CELL_VALOR), coste: g(CONFIG.CELL_COSTE), pygNoReal: g(CONFIG.CELL_PYG_NOREAL),
                    tr: g(CONFIG.CELL_TR), div: g(CONFIG.CELL_DIV), pygReal: g(CONFIG.CELL_PYG_REAL),
                    opc: g(CONFIG.CELL_OPC), pygDia: g(CONFIG.CELL_PYG_DIA), pygDiaPct: g(CONFIG.CELL_PYG_DIA_PCT) };
@@ -410,8 +410,9 @@ function buildHistory() {
   return { status: loading ? 'pending' : 'ok', sep: SP, tickers: info.tickers.length, currencies: info.ccys };
 }
 
-function readHist_(lots, emp, tz) {
-  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), sh = ss.getSheetByName(CONFIG.HIST);
+function readHist_(lots, emp, tz, ss) {
+  ss = ss || SpreadsheetApp.openById(CONFIG.SHEET_ID);
+  const sh = ss.getSheetByName(CONFIG.HIST);
   if (!sh || sh.getLastRow() < 2) return null;
   const vals = sh.getDataRange().getValues(), head = vals[0], px = {}, fx = {};
   for (let c = 0; c < head.length; c += 3) {
@@ -467,12 +468,13 @@ function cacheClear() {   // por si quieres vaciarla a mano desde el editor
 function staticSig_(ss) {
   return [CONFIG.OPER, CONFIG.DIV, 'Opc.'].map(n => { const sh = ss.getSheetByName(n); return sh ? sh.getLastRow() + 'x' + sh.getLastColumn() : '0'; }).join('|');
 }
-function readStatic_(ss, tz, fresh) {
+function readStatic_(ss, tz, fresh, T) {
   const sig = staticSig_(ss);
   if (!fresh) {
     const t = cacheGet_('static');
-    if (t) { try { const o = JSON.parse(t); if (o.sig === sig) return o.d; } catch (e) {} }
+    if (t) { try { const o = JSON.parse(t); if (o.sig === sig) { T.cache = 'hit'; return o.d; } } catch (e) {} }
   }
+  T.cache = fresh ? 'fresh' : 'miss';
   const op = readOper_(ss, tz);
   const d = { lots: op.lots, movs: op.movs, skipped: op.skipped, tipos: op.tipos, opc: readOpc_(ss, tz), divs: readDiv_(ss, tz), syms: readSyms_() };
   cachePut_('static', JSON.stringify({ sig, d }));
@@ -481,16 +483,22 @@ function readStatic_(ss, tz, fresh) {
 
 /* ---------- Punto de entrada ---------- */
 function loadAll(fresh) {
+  const t0 = Date.now(), T = { ms: {} }, lap = (k, t) => { T.ms[k] = Date.now() - t; return Date.now(); };
   const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), tz = ss.getSpreadsheetTimeZone();
-  const st = readStatic_(ss, tz, !!fresh);
-  const car = readCartera_(ss), emp = readEmp_(ss, tz);
+  let t = lap('abrir', t0);
+  const st = readStatic_(ss, tz, !!fresh, T); t = lap('fija', t);
+  const car = readCartera_(ss); t = lap('cartera', t);
+  const emp = readEmp_(ss, tz); t = lap('emp', t);
+  const rend = readRend_(ss, tz); t = lap('rend', t);
+  const hist = readHist_(st.lots, emp, tz, ss); t = lap('hist', t);
+  T.total = Date.now() - t0;
   const res = {
     positions: car.positions, totals: car.totals,
     lots: st.lots, movs: st.movs, opc: st.opc, skipped: st.skipped, tipos: st.tipos,
-    divs: st.divs, rend: readRend_(ss, tz), emp, syms: st.syms,
-    hist: readHist_(st.lots, emp, tz),
+    divs: st.divs, rend, emp, syms: st.syms, hist,
     today: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
-    divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión'
+    divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión',
+    timing: T
   };
   // Como texto JSON: evita que google.script.run devuelva null por NaN/Date/etc. (NaN pasa a null)
   return JSON.stringify(res);
