@@ -36,7 +36,7 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:860px){.g2 .cb>.leg{margin-top:auto;padding:10px 4px 0 0}}
+@media(min-width:860px){.g2>.card.r1,.g2>.card.r2{min-height:430px}.g2 .cb>.leg{margin-top:auto;padding:10px 4px 0 0}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .g2>.card:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
@@ -683,7 +683,7 @@ function renderCharts(){
   const bt={};D.divs.filter(x=>vis(x.t)&&(ALL||x.f.startsWith(Y))).forEach(x=>bt[x.t]=(bt[x.t]||0)+x.gross);
   const topT=Object.entries(bt).map(([t,v])=>({t,label:t,value:v})).sort((a,b)=>b.value-a.value);
   const ps=D.positions.filter(p=>vis(p.t)),pr=ser().length?perf(S.per):{curve:[],start:''};
-  $('#grs').innerHTML=[['Dividendos por mes · '+YL,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+YL,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+YL,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card${['a1','a2','a9','a10','a12'].includes(id)?' ch':''}"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
+  $('#grs').innerHTML=[['Dividendos por mes · '+YL,'a1'],['Dividendos por año','a2'],['Mayores pagadores · '+YL,'a3'],['Top posiciones (valor €)','a4'],['Opciones (PyG) por año de cierre','a12'],['Opciones (PyG) por ticker · '+YL,'a11'],['Por sector','a5'],['Por país','a6'],['Por divisa','a7'],['Por subsector','a8'],['TWR acumulado','a9'],['Valor vs. aportación neta','a10']].map(([t,id])=>`<div class="card${['a1','a2','a9','a10','a12'].includes(id)?' ch':''}${['a1','a2','a3'].includes(id)?' r1':''}${['a4','a12','a11'].includes(id)?' r2':''}"><h2 class="xh" data-x="${id}" data-t="${t}">${t} <span class="ex">⤢</span></h2>${id==='a9'||id==='a10'?'<div class="fg pp"></div>':''}<div id="${id}" class="cb"></div></div>`).join('');
   if(ser().length)document.querySelectorAll('.pp').forEach(el=>{el.innerHTML=PERS.filter(([k])=>k==='all'||windowStart(k)).map(([k,l])=>`<button data-p2="${k}" class="${S.per===k?'on':''}">${l}</button>`).join('');
     el.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{const y=window.scrollY,gs=$('#grs');gs.style.minHeight=gs.offsetHeight+'px';S.per=b.dataset.p2;renderRent();renderCharts();window.scrollTo(0,y);requestAnimationFrame(()=>{window.scrollTo(0,y);setTimeout(()=>{gs.style.minHeight='';window.scrollTo(0,y)},350)})})});
   document.querySelectorAll('#grs .xh').forEach(h=>h.onclick=()=>expand('#'+h.dataset.x,h.dataset.t));
