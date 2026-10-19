@@ -455,6 +455,7 @@ function line(id,series,fmt=pc,W=640){
   fitText($(id).querySelector('svg'),W);
   if(!WX&&!($(id).closest&&$(id).closest('.ch'))&&typeof ResizeObserver==='function'&&!(RO[id]||{}).line){const el=$(id);let lw=el.clientWidth;const o=new ResizeObserver(()=>{if(Math.abs(el.clientWidth-lw)>4&&el.clientWidth>0){lw=el.clientWidth;LR[id]&&LR[id]()}});o.observe(el);RO[id]={line:1,disconnect(){o.disconnect()}}}
   LR[id]=()=>line(id,series0,fmt,W0);
+  if((id==='#ch1'||id==='#ch2')&&isWide()){const c=$(id).closest?$(id).closest('.card'):null,lg=$(id).querySelector('.leg');if(c)c.querySelectorAll(':scope>.leg').forEach(x=>x.remove());if(c&&lg){c.style.position='relative';lg.style.cssText='position:absolute;top:16px;right:18px;margin:0';c.appendChild(lg)}}
   const XS=series.map(s=>s.pts.map(p=>new Date(p.d).getTime()));
   tipHook($(id),W,(vx,svg)=>{
     if(vx<m||vx>W-6)return null;
