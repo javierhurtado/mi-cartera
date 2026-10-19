@@ -420,7 +420,7 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
   tipHook($(id),W,(vx,svg)=>{
     const i=Math.floor((vx-mL)/bw);if(vx<mL||i<0||i>=n)return null;
     const h=svg.querySelector('.hl');h.setAttribute('x',mL+i*bw);h.setAttribute('width',bw);
-    const rows=series.map(s=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fh(s.data[i]||0)}</b></div>`).join('');
+    const rows=series.filter(s=>!s.ghost).map(s=>`<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:5px"></i>${series.length>1?s.name+': ':''}<b>${fh(s.data[i]||0)}</b></div>`).join('');
     return{x:mL+i*bw+bw/2,html:`<div class="k">${labels[i]}</div>${rows}${series.length>1?`<div>Total <b>${fh(tot[i])}</b></div>`:''}`}});
   const oc=CLK[CLKID||id];if(oc)$(id).querySelector('svg').addEventListener('click',ev=>{const sv=$(id).querySelector('svg'),r=sv.getBoundingClientRect(),vx=(ev.clientX-r.left)/r.width*W,i=Math.floor((vx-mL)/bw);if(vx>=mL&&i>=0&&i<n)oc(i)});
 }
@@ -697,7 +697,7 @@ function renderCharts(){
     document.querySelectorAll('#dtc [data-op]').forEach(e=>e.onclick=()=>optTrades(e.dataset.op,e.dataset.op+' · '+tt,f))};
   const optBucket=o=>(o.f.slice(0,4)===String(Y)&&o.f<=D.today)?+o.f.slice(5,7)-1:12;
   CLK['#a12']=i=>optList('Opciones cerradas en '+oyl[i],o=>fyOf(o)===oyl[i]);
-  reg('#a1',id=>bars(id,MES,ALL?[{name:'Cobrado',color:PAL[1],data:got}]:[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
+  reg('#a1',id=>bars(id,MES,ALL?[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:got.map(()=>0),ghost:1}]:[{name:'Cobrado',color:PAL[1],data:got},{name:'Previsto',color:PAL[2],data:fc}]));
   const OP=(D.opc||[]).filter(o=>vis(o.t)),ot={},oy={},om=Array(13).fill(0);
   OP.forEach(o=>{const y=fyOf(o);oy[y]=(oy[y]||0)+o.pyg;if(ALL||y===String(Y)){ot[o.t]=(ot[o.t]||0)+o.pyg;om[optBucket(o)]+=o.pyg}});
   const otTot=Object.values(ot).reduce((a,b)=>a+b,0);
