@@ -36,7 +36,7 @@ button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .g2{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
 @media(min-width:860px){.g2{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(min-width:860px){.g2>.card.r1,.g2>.card.r2{min-height:430px}.g2 .cb>.leg{margin-top:auto;padding:10px 4px 0 0}}
+@media(min-width:860px){.g2>.card.r1,.g2>.card.r2{min-height:420px}.g2 .cb>.leg{margin-top:auto;padding:10px 4px 0 0}}
 @media(min-width:1500px){.g2{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .g2>.card:last-child:nth-child(odd){grid-column:1/-1}
 @media(min-width:1500px){.g2>.card:last-child:nth-child(odd){grid-column:auto}.g2>.card:last-child:nth-child(3n+1){grid-column:1/-1}}
@@ -366,7 +366,7 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
 if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
 const RO={},WIDE='(min-width:860px)',isWide=()=>typeof matchMedia==='function'&&matchMedia(WIDE).matches;
-function chartH(id,def){if(WX||!isWide())return def;const el=$(id);return el&&el.closest&&el.closest('.ch')?Math.max(def,300):Math.max(def,400)}
+function chartH(id,def){if(WX||!isWide())return def;const el=$(id);return el&&el.closest&&el.closest('.ch')?Math.max(def,340):Math.max(def,400)}
 function chartH_old(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel);
   if(RO[sel]){try{RO[sel].disconnect()}catch(e){}delete RO[sel]}
@@ -415,7 +415,7 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
       else if(v<0){g+=`<rect x="${mL+i*bw+bw*.15}" y="${yn}" width="${bw*.7}" height="${h}" fill="${col}"/>`;yn+=h}});
     g+=`<text x="${mL+i*bw+bw/2}" y="${H-7}" font-size="${n>8?FS-2:FS}" text-anchor="middle" fill="var(--mu)">${l}</text>`});
   g+=`<rect class="hl" x="0" y="${mT}" width="0" height="${ph}" fill="var(--ac)" opacity=".1"/>`;
-  $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':'');
+  $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':(isWide()&&!WX?'<div class="leg" style="visibility:hidden"><span>&nbsp;</span></div>':''));
   fitText($(id).querySelector('svg'),W);
   tipHook($(id),W,(vx,svg)=>{
     const i=Math.floor((vx-mL)/bw);if(vx<mL||i<0||i>=n)return null;
