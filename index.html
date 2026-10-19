@@ -406,8 +406,9 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
   const FS=isWide()?12:10,MB=FS+12;
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:chartH(id,200),mB=MB,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
-  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=5+Math.max(20,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*(FS*.6))+8),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
-  const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
+  const hi0=Math.max(1e-9,...P),lo0=Math.min(0,...N),nm=Math.pow(10,Math.floor(Math.log10((hi0-lo0)/4))),stp=[1,2,2.5,5,10].map(k=>k*nm).find(v=>Math.ceil(hi0/v-1e-9)-Math.floor(lo0/v+1e-9)<=5)||(hi0-lo0),lo=Math.floor(lo0/stp+1e-9)*stp,hi=Math.ceil(hi0/stp-1e-9)*stp,span=hi-lo,lv=[];
+  for(let v=lo;v<=hi+stp*1e-6;v+=stp)lv.push(Math.abs(v)<stp*1e-6?0:v);
+  const mL=5+Math.max(20,Math.ceil(Math.max(...lv.map(v=>String(fmt(v)).length))*(FS*.6))+8),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="5" y="${y+4}" font-size="${FS}" text-anchor="start" fill="var(--mu)">${fmt(v)}</text>`});
   const seg=(x,y,w,h,c,k)=>{const r=Math.min(4,w/2,h);if(!k||r<=0.5)return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
     return k>0?`<path d="M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z" fill="${c}"/>`:`<path d="M${x},${y}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w-r}Q${x+w},${y+h} ${x+w},${y+h-r}V${y}Z" fill="${c}"/>`};
