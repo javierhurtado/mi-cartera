@@ -249,10 +249,11 @@ let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
 function updTxt(busy){const e=$('#upd');if(!e)return;try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…';return}
   if(!LASTUPD){e.textContent='';return}
   const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
-  e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
+  e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm+(LOADMS?' · '+(LOADMS/1000).toFixed(1).replace('.',',')+' s':'')}
 {const iv=setInterval(()=>{if(!$('#upd').dataset.b)updTxt(false)},60000);if(iv&&iv.unref)iv.unref()}
+var LOADMS=0;
 function load(done){
-  $('#upd').dataset.b='1';updTxt(true);
+  const T0=Date.now();$('#upd').dataset.b='1';updTxt(true);
   if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
   const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
   const fail=m=>{clearTimeout(slow);$('#upd').dataset.b='';updTxt(false);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
@@ -262,10 +263,10 @@ function load(done){
       if(!r)throw new Error('El servidor no devolvió datos.');
       D=typeof r==='string'?JSON.parse(r):r;EMP={};D.emp.forEach(e=>EMP[e.t]=e);
       $('#msg').classList.add('hide');$('#app').classList.remove('hide');
-      if(!window.__CACHED){LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
+      if(!window.__CACHED){LOADMS=Date.now()-T0;LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}}
       if(!(window.__CACHED)){$('#upd').dataset.b=''}
       updTxt(!!window.__CACHED);
-      META=D.lots.length+' lotes · '+D.divs.length+' div.'+(D.timing?' · servidor '+(D.timing.total/1000).toFixed(1).replace('.',',')+' s (caché '+D.timing.cache+': '+Object.entries(D.timing.ms).map(([k,v])=>k+' '+v).join(', ')+' ms)':'');updMeta();
+      META=D.lots.length+' lotes · '+D.divs.length+' div.'+(LOADMS?' · carga '+(LOADMS/1000).toFixed(1).replace('.',',')+' s':'')+(D.timing?' · servidor '+(D.timing.total/1000).toFixed(1).replace('.',',')+' s (caché '+D.timing.cache+': '+Object.entries(D.timing.ms).map(([k,v])=>k+' '+v).join(', ')+' ms)':'');updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       if(done)done();
