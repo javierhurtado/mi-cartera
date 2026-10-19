@@ -364,7 +364,7 @@ function bindTip(root,sel,fn){document.querySelectorAll(root+' '+sel).forEach(el
 if(typeof document.addEventListener==='function'){document.addEventListener('scroll',hideTip,true);document.addEventListener('pointerdown',hideTip,true);document.addEventListener('click',hideTip,true);document.addEventListener('keydown',hideTip,true)}
 let WX=0,CLKID=null;const CLK={},CHF={};
 const RO={},WIDE='(min-width:860px)',isWide=()=>typeof matchMedia==='function'&&matchMedia(WIDE).matches;
-function chartH(id,def){return isWide()&&!WX?Math.max(def,260):def}
+function chartH(id,def){return isWide()&&!WX?Math.max(def,300):def}
 function chartH_old(id,def){if(WX||!isWide())return def;const el=$(id);if(!el||!el.closest||!el.closest('.ch'))return def;const hh=el.clientHeight;return hh>def+10?Math.min(hh-34,560):def}
 function reg(sel,fn){CHF[sel]=fn;CLKID=null;fn(sel);
   if(RO[sel]){try{RO[sel].disconnect()}catch(e){}delete RO[sel]}
@@ -404,7 +404,7 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
   const FS=isWide()?12:10,MB=FS+12;
   W=WX||Math.round(($(id)||{}).clientWidth||0)||Math.min(W,Math.max(240,(window.innerWidth||400)-56));const H=WX?300:chartH(id,200),mB=MB,mT=8,n=labels.length,ph=H-mB-mT;
   const P=labels.map((_,i)=>series.reduce((s,x)=>s+Math.max(x.data[i]||0,0),0)),N=labels.map((_,i)=>series.reduce((s,x)=>s+Math.min(x.data[i]||0,0),0)),tot=labels.map((_,i)=>P[i]+N[i]);
-  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*(FS*.62))+10),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
+  const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=Math.max(isWide()?24:44,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*(FS*.62))+(isWide()?6:10)),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
   lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="${mL-4}" y="${y+4}" font-size="${FS}" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   labels.forEach((l,i)=>{let yp=Y(0),yn=Y(0);
@@ -443,7 +443,7 @@ function line(id,series,fmt=pc,W=640){
   const H=WX?320:chartH(id,W<500?200:230),xs=all.map(p=>new Date(p.d).getTime()),x0=Math.min(...xs),x1=Math.max(...xs),ys=all.map(p=>p.v);
   const y0=Math.min(0,...ys),y1=Math.max(...ys,y0+1e-6),rg=y1-y0,mg=Math.pow(10,Math.floor(Math.log10(rg/3))),stp=[1,2,2.5,5,10].map(k=>k*mg).find(v=>rg/v<=4.5)||rg,TK=[];
   for(let v=Math.ceil(y0/stp-1e-9)*stp;v<=y1+1e-9;v+=stp)TK.push(Math.abs(v)<stp*1e-6?0:v);
-  const m=Math.max(W<500?44:52,Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*(FS*.62))+10),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-MB-(v-y0)/((y1-y0)||1)*(H-MB-12);
+  const m=Math.max(isWide()?24:(W<500?44:52),Math.ceil(Math.max(...TK.map(v=>String(fmt(v)).length))*(FS*.62))+(isWide()?6:10)),sx=t=>m+(t-x0)/((x1-x0)||1)*(W-m-6),sy=v=>H-MB-(v-y0)/((y1-y0)||1)*(H-MB-12);
   let g='';TK.forEach(v=>{g+=`<line x1="${m}" x2="${W-6}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--bd)"/><text x="${m-4}" y="${sy(v)+4}" font-size="${FS}" text-anchor="end" fill="var(--mu)">${fmt(v)}</text>`});
   if(y0<0)g+=`<line x1="${m}" x2="${W-6}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--mu)" stroke-dasharray="3 3"/>`;
   series.forEach(s=>g+=`<polyline points="${s.pts.map(p=>sx(new Date(p.d).getTime()).toFixed(1)+','+sy(p.v).toFixed(1)).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2"/>`);
@@ -698,7 +698,6 @@ function renderCharts(){
   reg('#a11',id=>{const it=Object.entries(ot).map(([t,v])=>({t:'',lg:t,label:t,value:v})).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value)).slice(0,WX?1e9:10);hbars(id,it);
     document.querySelectorAll(id+' .hbr').forEach(el=>{const t=it[+el.dataset.hi].label;el.style.cursor='pointer';el.onclick=()=>optTrades(t,'Opciones '+t+' · '+YL,o=>ALL||fyOf(o)===String(Y))})});
   reg('#a12',id=>bars(id,oyl,[{name:'PyG opciones',color:PAL[1],data:oyl.map(y=>oy[y])}]));
-  {const c=$('#a11').closest?$('#a11').closest('.card'):null;if(c){c.style.position='relative';let t=c.querySelector('.otot');if(!t){t=document.createElement('div');t.className='otot k';t.style.cssText='position:absolute;right:16px;bottom:8px';c.appendChild(t)}t.innerHTML='Total '+YL+': <b>'+fh(otTot,0)+' €</b>'}}
   reg('#a2',id=>bars(id,yl,[{name:'Cobrado',color:PAL[1],data:yl.map(y=>yrs[y]||0)},{name:'Previsto',color:PAL[2],data:yl.map(y=>projTot(+y))}]));
   reg('#a3',id=>hbars(id,WX?topT:topT.slice(0,10)));
   reg('#a4',id=>hbars(id,[...ps].sort((a,b)=>b.val-a.val).slice(0,WX?1e9:10).map(p=>({t:p.t,label:p.t,value:p.val}))));
