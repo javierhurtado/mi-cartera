@@ -346,10 +346,13 @@ function bars(id,labels,series,fmt=n=>fh(n,0),W=360){
   const hi=Math.max(1e-9,...P),lo=Math.min(0,...N),span=hi-lo,mL=11+Math.max(20,Math.ceil(Math.max(...[lo,hi/2,hi].map(v=>String(fmt(v)).length))*(FS*.6))+8),sc=ph/span,Y=v=>mT+(hi-v)*sc,bw=(W-mL-6)/n;let g='';
   const lv=lo<0?[lo,0,hi]:[0,hi/2,hi];
   lv.forEach(v=>{const y=Y(v);g+=`<line x1="${mL}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--bd)"/><text x="11" y="${y+4}" font-size="${FS}" text-anchor="start" fill="var(--mu)">${fmt(v)}</text>`});
+  const seg=(x,y,w,h,c,k)=>{const r=Math.min(4,w/2,h);if(!k||r<=0.5)return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`;
+    return k>0?`<path d="M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z" fill="${c}"/>`:`<path d="M${x},${y}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w-r}Q${x+w},${y+h} ${x+w},${y+h-r}V${y}Z" fill="${c}"/>`};
+  const tp=labels.map((_,i)=>[...series].reverse().find(x=>(x.data[i]||0)>0)),bt=labels.map((_,i)=>[...series].reverse().find(x=>(x.data[i]||0)<0));
   labels.forEach((l,i)=>{let yp=Y(0),yn=Y(0);
     series.forEach(s=>{const v=s.data[i]||0,h=Math.abs(v)*sc,col=(series.length===1&&v<0)?'#d93025':s.color;
-      if(v>0){yp-=h;g+=`<rect x="${mL+i*bw+bw*.15}" y="${yp}" width="${bw*.7}" height="${h}" fill="${col}"/>`}
-      else if(v<0){g+=`<rect x="${mL+i*bw+bw*.15}" y="${yn}" width="${bw*.7}" height="${h}" fill="${col}"/>`;yn+=h}});
+      if(v>0){yp-=h;g+=seg(mL+i*bw+bw*.15,yp,bw*.7,h,col,s===tp[i]?1:0)}
+      else if(v<0){g+=seg(mL+i*bw+bw*.15,yn,bw*.7,h,col,s===bt[i]?-1:0);yn+=h}});
     g+=`<text x="${mL+i*bw+bw/2}" y="${H-7}" font-size="${n>8?FS-2:FS}" text-anchor="middle" fill="var(--mu)">${l}</text>`});
   g+=`<rect class="hl" x="0" y="${mT}" width="0" height="${ph}" fill="var(--ac)" opacity=".1"/>`;
   $(id).innerHTML=`<div class="cw"><svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg><div class="tt hide"></div></div>`+(series.length>1?'<div class="leg">'+series.map(s=>`<span><i style="background:${s.color}"></i>${s.name}</span>`).join('')+'</div>':(isWide()&&!WX?'<div class="leg" style="visibility:hidden"><span>&nbsp;</span></div>':''));
