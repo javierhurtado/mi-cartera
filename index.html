@@ -69,6 +69,7 @@ body:has(.ov:not(.hide)){overflow:hidden}
 .tile .sub{font-size:12px;color:var(--mu)}
 .bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}.bar .t{width:150px}.bar .tr{flex:1;background:var(--bd);border-radius:4px;height:12px;position:relative}.bar .tr i{position:absolute;top:0;height:12px;border-radius:4px}
 #tp{min-width:720px}
+.rot{animation:mcspin .9s linear infinite}@keyframes mcspin{to{transform:rotate(360deg)}}
 .ib{padding:7px 10px;display:inline-flex;align-items:center;gap:6px}.ib svg{display:block}
 .kp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kp4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
 .kc{border:1px solid var(--bd);border-radius:10px;padding:8px 10px;min-width:0}
@@ -245,7 +246,7 @@ function fetchTv(){
 
 /* ---------- carga ---------- */
 let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
-function updTxt(busy){const e=$('#upd');if(!e)return;if(busy){e.textContent='Actualizando…';return}
+function updTxt(busy){const e=$('#upd');if(!e)return;try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…';return}
   if(!LASTUPD){e.textContent='';return}
   const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
   e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
