@@ -55,7 +55,7 @@ body:has(.ov:not(.hide)){overflow:hidden}
 .tile{border:1px solid var(--bd);border-radius:10px;padding:10px}
 .tile .sub{font-size:12px;color:var(--mu)}
 .bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:5px 0}.bar .t{width:150px}.bar .tr{flex:1;background:var(--bd);border-radius:4px;height:12px;position:relative}.bar .tr i{position:absolute;top:0;height:12px;border-radius:4px}
-#tp{min-width:720px}
+#tp{min-width:720px}@media(max-width:760px){#tp{font-size:14px}#tp th{font-size:11px}#tp th,#tp td{padding:6px 7px}}
 .rot{animation:mcspin .9s linear infinite}@keyframes mcspin{to{transform:rotate(360deg)}}
 .ib{padding:7px 10px;display:inline-flex;align-items:center;gap:6px}.ib svg{display:block}
 .kp3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kp4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
@@ -427,7 +427,7 @@ function group(list,keyf,valf,top=8){
 }
 
 /* ---------- renders ---------- */
-const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['chg','Día'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['peso','Peso'],['yld','Yield'],['sector','Sector']];
+const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['chg','Día'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['dv','Div. cobr. €'],['tr','Retorno €'],['trp','Retorno %'],['peso','Peso'],['yld','Yield'],['sector','Sector']];
 const STRC=['t','ccy','pais','sector'];
 const num=x=>(x==null||!isFinite(x))?NaN:x;
 const tile=(k,v,sub)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
@@ -456,10 +456,10 @@ function renderSummary(){
   </div><div class="kp4">${sm('Latente',lat)}${sm('Dividendos',div)}${sm('Opciones',opc)}${sm('Realizado',rea)}</div>`;
 }
 function renderPos(){
-  const f=S;let rows=D.positions.filter(p=>vis(p.t)).map(p=>{
-    const e=EMP[p.t]||{};
+  const f=S,DVT={};D.divs.forEach(x=>DVT[x.t]=(DVT[x.t]||0)+(isFinite(x.gross)?x.gross:0));let rows=D.positions.filter(p=>vis(p.t)).map(p=>{
+    const e=EMP[p.t]||{},dv=DVT[p.t]||0,tr=(p.pyg||0)+dv;
     const yp=p.q>0?p.val/p.q:NaN,yld=(e.divAnual>0&&yp>0)?e.divAnual/yp:NaN;
-    return{...p,pygp:p.cost?p.pyg/p.cost:NaN,pais:e.pais||'',name:e.name||'',broker:brokerOf(p.t),yld}});
+    return{...p,dv,tr,trp:p.cost?tr/p.cost:NaN,pygp:p.cost?p.pyg/p.cost:NaN,pais:e.pais||'',name:e.name||'',broker:brokerOf(p.t),yld}});
   const brokers=[...new Set(rows.map(r=>r.broker).filter(Boolean))].sort(),
         paises=[...new Set(rows.map(r=>r.pais).filter(Boolean))].sort(),
         divisas=[...new Set(rows.map(r=>r.ccy).filter(Boolean))].sort();
@@ -480,7 +480,7 @@ function renderPos(){
   if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
   else{$('#kp').className='card';const c=rows.reduce((s,r)=>s+(r.cost||0),0),g=tv-c;$('#kp').innerHTML='<div class="grid">'+[['Valor (filtro)',fh(tv)],['Coste (filtro)',fh(c)],['PyG no realizado',`<span class="${cl(g)}" style="white-space:nowrap">${fh(g)} <span style="font-size:.62em;font-weight:600">${pc(c?g/c:NaN)}</span></span>`],['Posiciones',rows.length]].map(([k,v])=>kpi(k,v)).join('')+'</div>'}
   $('#tp').innerHTML='<tr>'+COLS.map(([c,l])=>`<th class="srt" data-sort="${c}">${l}${S.sort.k===c?(S.sort.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
-  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td class="${cl(p.chg)}">${pc(p.chg)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${p.sector}</td></tr>`).join('');
+  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td class="${cl(p.chg)}">${pc(p.chg)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fh(p.dv)}</td><td class="${cl(p.tr)}">${fh(p.tr)}</td><td class="${cl(p.tr)}">${pc(p.trp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${p.sector}</td></tr>`).join('');
   document.querySelectorAll('[data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
   document.querySelectorAll('[data-sort]').forEach(h=>h.onclick=()=>{const c=h.dataset.sort;S.sort=S.sort.k===c?{k:c,d:-S.sort.d}:{k:c,d:STRC.includes(c)?1:-1};renderPos()});
 }
@@ -503,7 +503,7 @@ function openDetail(t){
     const sold=!!l.fv,pl=sold?l.eurV-l.eur:(p.px?l.q*p.px*fxNow(p.ccy)-l.eur:NaN);
     return `<tr class="${sold?'sold':''}"><td>${l.fc}</td><td>${l.tipo}</td><td>${fh(l.q,2)}</td><td class="${sold?'':(l.eur/l.q>pxE?'dn':l.eur/l.q<pxE?'up':'')}">${fm(l.eur/l.q)}</td><td>${fh(l.eur)}</td><td>${sold?l.fv:'<span class="up">Abierto</span>'}</td><td>${sold?fh(l.eurV):'–'}</td><td class="${cl(pl)}">${fh(pl)}</td><td>${fh(l.div)}</td><td>${fm(l.eur?l.div/l.eur*100:NaN)} %</td></tr>`}).join('');
   $('#dtc').innerHTML=`<div class="dh"><div>${logo(t)}<b style="font-size:17px">${t}</b> <span class="k">${e.name||''}</span></div><button id="dx">✕ Cerrar</button></div>
-  <div class="grid" style="margin:10px 0">${[['Posición',fh(p.q||0,0)],['PMC',fm(p.pmc)],['Valor €',fh(p.val)],['PyG €',`<span class="${cl(p.pyg)}">${fh(p.pyg)}</span>`],['Dividendos cobrados',fh(dTot)],['Yield actual',fm(yld)+' %'],['YOC',fm(yoc)+' %'],['YOC cobrado (histórico)',fm(cOpen?dTot/cOpen*100:NaN)+' %']].map(([k,v])=>kpi(k,v)).join('')}</div>
+  <div class="grid" style="margin:10px 0">${[['Posición',fh(p.q||0,0)],['PMC',fm(p.pmc)],['Coste total €',fh(p.cost)],['Cotización actual',fm(p.px)+' '+sym(p.ccy)],['Valor €',fh(p.val)],['PyG €',`<span class="${cl(p.pyg)}">${fh(p.pyg)}</span>`],['Dividendos cobrados',fh(dTot)],['Yield actual',fm(yld)+' %'],['YOC',fm(yoc)+' %'],['YOC cobrado (histórico)',fm(cOpen?dTot/cOpen*100:NaN)+' %']].map(([k,v])=>kpi(k,v)).join('')}</div>
   <h2>Lotes de compra</h2><div class="sc"><table style="min-width:820px"><tr><th>Compra</th><th>Tipo</th><th>Acc.</th><th>Precio €</th><th>Coste €</th><th>Venta</th><th>Venta €</th><th>PyG €</th><th>Div. asignado €</th><th>% s/ coste</th></tr>${rows||'<tr><td colspan="10">Sin lotes en Oper.</td></tr>'}</table></div>
   <div class="note">El PyG de lotes abiertos usa el precio actual de Cartera (aprox. si la divisa no es €). El dividendo de cada cobro se reparte entre los lotes vivos ese día, proporcional a sus acciones.</div>
   <h2 style="margin-top:14px">Dividendos cobrados por año</h2><div class="sc"><table style="min-width:300px"><tr><th>Año</th><th>Cobros</th><th>Bruto €</th></tr>${Object.entries(d.divs.reduce((m,x)=>{const y=x.f.slice(0,4);(m[y]=m[y]||{n:0,s:0}).n++;m[y].s+=x.gross;return m},{})).sort().reverse().map(([y,o])=>`<tr><td>${y}</td><td>${o.n}</td><td>${fh(o.s)}</td></tr>`).join('')||'<tr><td colspan="3">–</td></tr>'}</table></div>
