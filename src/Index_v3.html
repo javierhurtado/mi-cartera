@@ -543,7 +543,7 @@ function renderRent(){
   if(!ser().length){$('#kr').innerHTML='<div class="k">Sin datos.</div>';return}
   if(!windowStart(S.per)&&S.per!=='all')S.per='all';
   const r=perf(S.per),inc=r.yrs>=1;
-  $('#kr').innerHTML=[['TWR',`<span class="${cl(r.twr)}">${pc(r.twr)}</span>`],['TWR anualizado',inc?`<span class="${cl(r.ann)}">${pc(r.ann)}</span>`:'n/d (&lt; 1 año)'],['MWR (TIR anualizada)',`<span class="${cl(r.mwr)}">${pc(r.mwr)}</span>`],['Desde',r.start],['Valor actual',fh(D.totals.valor)],['Aportación neta',fh(ser()[ser().length-1].inv)]].map(([k,v])=>kpi(k,v)).join('');
+  $('#kr').innerHTML=[['TWR',`<span class="${cl(r.twr)}">${pc(r.twr)}</span>`],['TWR anualizado',inc?`<span class="${cl(r.ann)}">${pc(r.ann)}</span>`:'–'],['MWR (TIR anualizada)',`<span class="${cl(r.mwr)}">${pc(r.mwr)}</span>`],['Desde',r.start],['Valor actual',fh(D.totals.valor)],['Aportación neta',fh(ser()[ser().length-1].inv)]].map(([k,v])=>kpi(k,v)).join('');
   drawTwr(r);
   $('#rinfo').onclick=showRInfo;
   const SW=ser().filter(x=>x.d>=r.start);
