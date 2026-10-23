@@ -336,7 +336,7 @@ function buildRend(){
 function windowStart(per){
   if(per==='all')return null;
   let s;if(per==='ytd')s=(+D.today.slice(0,4)-1)+'-12-31';
-  else{const dt=new Date(D.today+'T00:00:00Z');dt.setUTCFullYear(dt.getUTCFullYear()-({'1y':1,'3y':3,'5y':5})[per]);s=dt.toISOString().slice(0,10)}
+  else{const dt=new Date(D.today+'T00:00:00Z');if(per==='1m'||per==='6m')dt.setUTCMonth(dt.getUTCMonth()-(per==='1m'?1:6));else dt.setUTCFullYear(dt.getUTCFullYear()-({'1y':1,'3y':3,'5y':5})[per]);s=dt.toISOString().slice(0,10)}
   const B=ser();return B.length&&s>B[0].d?s:null;
 }
 function perf(per){
@@ -575,7 +575,7 @@ function openDetail(t){
   ${d.orph.length?`<div class="note fc">${d.orph.length} cobro(s) sin lote vivo en esa fecha (¿cambio de ticker o lote sin registrar?): ${d.orph.map(x=>x.f).join(', ')}</div>`:''}`;
   $('#dt').classList.remove('hide');$('#dx').onclick=()=>$('#dt').classList.add('hide');
 }
-const PERS=[['all','Inicio'],['ytd','YTD'],['1y','1A'],['3y','3A'],['5y','5A']];
+const PERS=[['1m','1M'],['6m','6M'],['ytd','YTD'],['1y','1A'],['3y','3A'],['5y','5A'],['all','Todo']];
 const BMK=[['sp','S&P 500',PAL[1]],['ibex','IBEX 35',PAL[2]],['msci','MSCI World',PAL[4]],['dya','Div. Aristocrats',PAL[5]]];
 let BM=null,BMSEL=[],BMLOAD=false,BMERR='';
 function bmLoad(){
