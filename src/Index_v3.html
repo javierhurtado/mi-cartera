@@ -427,7 +427,7 @@ function group(list,keyf,valf,top=8){
 }
 
 /* ---------- renders ---------- */
-const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['chg','Día'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pyg','PyG €'],['pygp','PyG %'],['dv','Div. cobr. €'],['tr','Retorno €'],['trp','Retorno %'],['peso','Peso'],['yld','Yield'],['sector','Sector']];
+const COLS=[['t','Empresa'],['q','Pos.'],['pmc','PMC'],['px','Último'],['chg','Día'],['ccy','Div.'],['pais','País'],['cost','Coste €'],['val','Valor €'],['pygp','PyG %'],['trp','Retorno %'],['peso','Peso'],['yld','Yield'],['dv','Div. cobr. €'],['sector','Sector']];
 const STRC=['t','ccy','pais','sector'];
 const num=x=>(x==null||!isFinite(x))?NaN:x;
 const tile=(k,v,sub)=>`<div class="tile"><div class="k">${k}</div><div class="v">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
@@ -480,7 +480,7 @@ function renderPos(){
   if(!(f.fb||f.fp||f.fc||HID.size))renderSummary();
   else{$('#kp').className='card';const c=rows.reduce((s,r)=>s+(r.cost||0),0),g=tv-c;$('#kp').innerHTML='<div class="grid">'+[['Valor (filtro)',fh(tv)],['Coste (filtro)',fh(c)],['PyG no realizado',`<span class="${cl(g)}" style="white-space:nowrap">${fh(g)} <span style="font-size:.62em;font-weight:600">${pc(c?g/c:NaN)}</span></span>`],['Posiciones',rows.length]].map(([k,v])=>kpi(k,v)).join('')+'</div>'}
   $('#tp').innerHTML='<tr>'+COLS.map(([c,l])=>`<th class="srt" data-sort="${c}">${l}${S.sort.k===c?(S.sort.d>0?' ▲':' ▼'):''}</th>`).join('')+'</tr>'+
-  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td class="${cl(p.chg)}">${pc(p.chg)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${fh(p.pyg)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td>${fh(p.dv)}</td><td class="${cl(p.tr)}">${fh(p.tr)}</td><td class="${cl(p.tr)}">${pc(p.trp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${p.sector}</td></tr>`).join('');
+  rows.map(p=>`<tr class="clk" data-pos="${p.t}"><td>${logo(p.t)}<b>${p.t}</b> <span class="k nm">${p.name}</span></td><td>${fh(p.q,0)}</td><td class="${p.pmc>p.px?'dn':p.pmc<p.px?'up':''}">${fm(p.pmc)}</td><td>${fm(p.px)}</td><td class="${cl(p.chg)}">${pc(p.chg)}</td><td>${sym(p.ccy)}</td><td title="${p.pais||''}" style="text-align:center">${flag(p.pais)}</td><td>${fh(p.cost)}</td><td>${fh(p.val)}</td><td class="${cl(p.pyg)}">${pc(p.pygp)}</td><td class="${cl(p.tr)}">${pc(p.trp)}</td><td>${fm(p.peso*100,1)} %</td><td>${isFinite(p.yld)?fm(p.yld*100,2)+' %':'–'}</td><td>${fh(p.dv)}</td><td>${p.sector}</td></tr>`).join('');
   document.querySelectorAll('[data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
   document.querySelectorAll('[data-sort]').forEach(h=>h.onclick=()=>{const c=h.dataset.sort;S.sort=S.sort.k===c?{k:c,d:-S.sort.d}:{k:c,d:STRC.includes(c)?1:-1};renderPos()});
 }
