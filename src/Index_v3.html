@@ -546,8 +546,7 @@ function renderRent(){
   $('#kr').innerHTML=[['TWR',`<span class="${cl(r.twr)}">${pc(r.twr)}</span>`],['TWR anualizado',inc?`<span class="${cl(r.ann)}">${pc(r.ann)}</span>`:'–'],['MWR (TIR anualizada)',`<span class="${cl(r.mwr)}">${pc(r.mwr)}</span>`],['Desde',r.start],['Valor actual',fh(D.totals.valor)],['Aportación neta',fh(ser()[ser().length-1].inv)]].map(([k,v])=>kpi(k,v)).join('');
   drawTwr(r);
   $('#rinfo').onclick=showRInfo;
-  const SW=ser().filter(x=>x.d>=r.start);
-  line('#ch2',[{name:'Valor de cartera',color:PAL[0],pts:SW.map(x=>({d:x.d,v:x.v}))},{name:'Aportación neta',color:PAL[2],pts:SW.map(x=>({d:x.d,v:x.inv}))}],n=>fh(n,0));
+  line('#ch2',[{name:'Valor de cartera',color:PAL[0],pts:ser().map(x=>({d:x.d,v:x.v}))},{name:'Aportación neta',color:PAL[2],pts:ser().map(x=>({d:x.d,v:x.inv}))}],n=>fh(n,0));
   const h=D.hist;let msg;
   if(!h)msg='<b>Histórico de precios: sin construir.</b> El TWR actual usa solo el último precio operado de cada valor (poco preciso). Constrúyelo para valorar la cartera cada semana.';
   else{const tot=Object.keys(h.px).length,bad=h.missing.length+h.noEmp.length;
