@@ -505,7 +505,7 @@ function loadAll(fresh) {
 }
 
 
-/* Comparativa con índices (rentabilidad total): ETFs acumulativos/precio ajustado por dividendos de Yahoo Finance, cierres semanales */
+/* Comparativa con índices (rentabilidad total): ETFs acumulativos/precio ajustado por dividendos de Yahoo Finance, cierres semanales (diarios el último año largo) */
 const BENCH_ = [
   { k: 'sp',   name: 'S&P 500',            syms: ['SXR8.DE', '^SP500TR', 'VOO'] },
   { k: 'ibex', name: 'IBEX 35',            syms: ['LYXIB.MC', '^IBEX'] },
@@ -519,10 +519,12 @@ function benchFetch_(sym) {
   const j = JSON.parse(r.getContentText()), res = j && j.chart && j.chart.result && j.chart.result[0];
   if (!res || !res.timestamp) return null;
   const adj = res.indicators.adjclose && res.indicators.adjclose[0] && res.indicators.adjclose[0].adjclose, cl = res.indicators.quote[0].close, ts = res.timestamp, wk = {};
+  const recent = Date.now() - 400 * 864e5;   // último año largo en diario (para 1M/3M/6M/1A); antes, semanal
   ts.forEach((t, i) => {
     const v = adj ? adj[i] : cl[i]; if (v == null || !isFinite(v)) return;
-    const d = new Date(t * 1000), mon = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 864e5);
-    wk[Utilities.formatDate(mon, 'UTC', 'yyyy-MM-dd')] = [Utilities.formatDate(d, 'UTC', 'yyyy-MM-dd'), Math.round(v * 10000) / 10000];
+    const d = new Date(t * 1000), mon = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 864e5),
+      ds = Utilities.formatDate(d, 'UTC', 'yyyy-MM-dd');
+    wk[t * 1000 > recent ? ds : Utilities.formatDate(mon, 'UTC', 'yyyy-MM-dd')] = [ds, Math.round(v * 10000) / 10000];
   });
   const pts = Object.keys(wk).sort().map(k => wk[k]);
   return pts.length > 10 ? { cur: res.meta && res.meta.currency, pts } : null;
@@ -530,12 +532,12 @@ function benchFetch_(sym) {
 function loadBench() {
   const C = CacheService.getScriptCache(), out = {}, errors = [];
   BENCH_.forEach(b => {
-    let hit = null; try { hit = JSON.parse(C.get('BM_' + b.k) || 'null'); } catch (e) {}
+    let hit = null; try { hit = JSON.parse(C.get('BM2_' + b.k) || 'null'); } catch (e) {}
     if (!hit) {
       for (const s of b.syms) {
         try { const o = benchFetch_(s); if (o) { hit = { name: b.name, sym: s, cur: o.cur, pts: o.pts }; break; } } catch (e) {}
       }
-      if (hit) { try { C.put('BM_' + b.k, JSON.stringify(hit), 21600); } catch (e) {} }
+      if (hit) { try { C.put('BM2_' + b.k, JSON.stringify(hit), 21600); } catch (e) {} }
     }
     if (hit) out[b.k] = hit; else errors.push(b.name);
   });
