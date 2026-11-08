@@ -587,7 +587,10 @@ function bmCurve(k,start){
   const b=BM&&BM[k];if(!b||!b.pts.length)return null;
   const P=b.pts;let p0=null;for(const x of P){if(x[0]<=start)p0=x[1];else break}
   if(p0==null)return null;
-  return P.filter(x=>x[0]>=start&&x[0]<=D.today).map(x=>({d:x[0],v:x[1]/p0-1}));
+  let o=P.filter(x=>x[0]>=start&&x[0]<=D.today).map(x=>({d:x[0],v:x[1]/p0-1}));
+  if((Date.parse(D.today)-Date.parse(start))/864e5>370){   // rangos largos: un punto por semana para que no se vea apelmazado
+    const m=new Map();o.forEach((q,i)=>m.set(i===0?'first':Math.floor(Date.parse(q.d)/6048e5),q));o=[...m.values()]}
+  return o;
 }
 function drawTwr(r,again){
   $('#bmc').innerHTML=BMK.map(([k,l,c])=>`<button data-bm="${k}" class="${BMSEL.includes(k)?'on':''}">${l}</button>`).join('');
