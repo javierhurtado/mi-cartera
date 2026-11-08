@@ -512,36 +512,38 @@ const BENCH_ = [
   { k: 'msci', name: 'MSCI World',         syms: ['IWDA.AS', 'EUNL.DE', 'URTH'] },
   { k: 'dya',  name: 'Div. Aristocrats',   syms: ['SPYD.DE', 'NOBL'] }
 ];
-function benchFetch_(sym) {
-  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?range=max&interval=1d&events=div%2Csplit';
+function benchSeries_(sym, qs) {
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(sym) + '?' + qs + '&events=div%2Csplit';
   const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'User-Agent': 'Mozilla/5.0' } });
   if (r.getResponseCode() !== 200) return null;
   const j = JSON.parse(r.getContentText()), res = j && j.chart && j.chart.result && j.chart.result[0];
   if (!res || !res.timestamp) return null;
-  const adj = res.indicators.adjclose && res.indicators.adjclose[0] && res.indicators.adjclose[0].adjclose, cl = res.indicators.quote[0].close, ts = res.timestamp, wk = {};
-  const recent = Date.now() - 400 * 864e5;   // último año largo en diario (para 1M/3M/6M/1A); antes, semanal
-  ts.forEach((t, i) => {
-    const v = adj ? adj[i] : cl[i]; if (v == null || !isFinite(v)) return;
-    const d = new Date(t * 1000), mon = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 864e5),
-      ds = Utilities.formatDate(d, 'UTC', 'yyyy-MM-dd');
-    wk[t * 1000 > recent ? ds : Utilities.formatDate(mon, 'UTC', 'yyyy-MM-dd')] = [ds, Math.round(v * 10000) / 10000];
-  });
-  const pts = Object.keys(wk).sort().map(k => wk[k]);
-  return pts.length > 10 ? { cur: res.meta && res.meta.currency, pts } : null;
+  const adj = res.indicators.adjclose && res.indicators.adjclose[0] && res.indicators.adjclose[0].adjclose, cl = res.indicators.quote[0].close, out = [];
+  res.timestamp.forEach((t, i) => { const v = adj ? adj[i] : cl[i]; if (v != null && isFinite(v)) out.push([Utilities.formatDate(new Date(t * 1000), 'UTC', 'yyyy-MM-dd'), Math.round(v * 10000) / 10000]); });
+  return { cur: res.meta && res.meta.currency, rows: out };
+}
+/* Histórico completo semanal (range=max con interval=1d lo devuelve Yahoo en mensual) + últimos 2 años en diario */
+function benchFetch_(sym) {
+  const wk = benchSeries_(sym, 'range=max&interval=1wk');
+  if (!wk || wk.rows.length < 10) return null;
+  let dl = null; try { dl = benchSeries_(sym, 'range=2y&interval=1d'); } catch (e) {}
+  let pts = wk.rows;
+  if (dl && dl.rows.length > 20) { const d0 = dl.rows[0][0]; pts = wk.rows.filter(x => x[0] < d0).concat(dl.rows); }
+  return { cur: wk.cur, pts };
 }
 function loadBench() {
   const C = CacheService.getScriptCache(), out = {}, errors = [];
   BENCH_.forEach(b => {
-    let hit = null; try { hit = JSON.parse(C.get('BM2_' + b.k) || 'null'); } catch (e) {}
+    let hit = null; try { hit = JSON.parse(C.get('BM3_' + b.k) || 'null'); } catch (e) {}
     if (!hit) {
       for (const s of b.syms) {
         try { const o = benchFetch_(s); if (o) { hit = { name: b.name, sym: s, cur: o.cur, pts: o.pts }; break; } } catch (e) {}
       }
-      if (hit) { try { C.put('BM2_' + b.k, JSON.stringify(hit), 21600); } catch (e) {} }
+      if (hit) { try { C.put('BM3_' + b.k, JSON.stringify(hit), 21600); } catch (e) {} }
     }
     if (hit) out[b.k] = hit; else errors.push(b.name);
   });
   const dly = k => { const P = out[k].pts, lim = Utilities.formatDate(new Date(Date.now() - 60 * 864e5), 'UTC', 'yyyy-MM-dd'); return P.filter(x => x[0] >= lim).length; };
-  console.log('loadBench v2 (diario último año) · puntos en últimos 60 días: ' + Object.keys(out).map(k => k + ' ' + dly(k)).join(' · ') + (errors.length ? ' · sin datos: ' + errors.join(', ') : ''));
+  console.log('loadBench v3 (semanal + 2 años diario) · puntos en últimos 60 días: ' + Object.keys(out).map(k => k + ' ' + dly(k)).join(' · ') + (errors.length ? ' · sin datos: ' + errors.join(', ') : ''));
   return JSON.stringify({ bench: out, errors });
 }
