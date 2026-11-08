@@ -210,7 +210,7 @@ function logoOf_(v) {
 function readEmp_(ss, tz) {
   const sh = sheet_(ss, CONFIG.EMP), n = sh.getLastRow() - 2;
   if (n < 1) return [];
-  const vals = sh.getRange(3, 1, n, 31).getValues(), out = [];
+  const nc = Math.max(31, Math.min(32, sh.getLastColumn())), vals = sh.getRange(3, 1, n, nc).getValues(), out = [];
   vals.forEach(r => {
     const t = String(r[1] || '').trim().toUpperCase();
     if (!t) return;
@@ -220,6 +220,7 @@ function readEmp_(ss, tz) {
       divAnual: num_(r[14]) || 0,
       months: r.slice(15, 27).map(x => { const v = num_(x); return isNaN(v) ? 0 : v; }),   // € por acción, ene..dic
       nextDate: date_(r[27], tz), nextDiv: num_(r[28]) || 0, nextTotal: num_(r[29]) || 0,
+      conf: /^(1|s|si|x|true|ok|confirmado|✓|✔)$/.test(norm_(r[31])),   // columna AF opcional: marca el próximo dividendo como confirmado
       logo: CONFIG.LOGOS[t] || logoOf_(r[30])
     });
   });
