@@ -541,5 +541,7 @@ function loadBench() {
     }
     if (hit) out[b.k] = hit; else errors.push(b.name);
   });
+  const dly = k => { const P = out[k].pts, lim = Utilities.formatDate(new Date(Date.now() - 60 * 864e5), 'UTC', 'yyyy-MM-dd'); return P.filter(x => x[0] >= lim).length; };
+  console.log('loadBench v2 (diario último año) · puntos en últimos 60 días: ' + Object.keys(out).map(k => k + ' ' + dly(k)).join(' · ') + (errors.length ? ' · sin datos: ' + errors.join(', ') : ''));
   return JSON.stringify({ bench: out, errors });
 }
