@@ -614,7 +614,7 @@ function renderDiv(){
   const ann=Y>=cy?totR+totF:totR,tvv=D.totals.valor,tc=D.totals.coste;
   $('#kd').innerHTML=[['Cobrado '+Y,fh(totR)],['Previsto restante '+Y,`<span class="fc">${fh(totF)}</span>`],['Últimos 12 meses',fh(l12)],['Dividendo anual'+(Y>=cy?' estimado':''),fh(ann)],['Yield sobre coste',fm(ann/tc*100)+' %'],['Yield sobre valor',fm(ann/tvv*100)+' %']].map(([k,v])=>kpi(k,v)).join('');
   const up=D.emp.filter(e=>vis(e.t)&&e.nextDate&&e.nextDate>=D.today&&e.nextTotal>0&&e.acc>0).sort((a,b)=>a.nextDate.localeCompare(b.nextDate)).slice(0,6);
-  $('#up').innerHTML=up.length?up.map(e=>`<div class="it" style="font-size:14px;padding:4px 0"><span>${logo(e.t)}<b>${e.t}</b> <span class="k">${e.name||''}</span></span><span${e.conf?'':' class="fc"'}><span class="${e.conf?'k':''}">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}/${e.nextDate.slice(0,4)}</span> &nbsp; <b>${fh(e.nextTotal)}</b></span></div>`).join('')+(up.some(e=>!e.conf)?'<div class="leg"><span><i style="background:var(--fc)"></i>Estimado</span></div>':''):'<div class="note">Sin próximos pagos</div>';
+  $('#up').innerHTML=up.length?up.map(e=>`<div class="it ${e.conf?'':'f'}"><span>${logo(e.t)}${e.t} <span class="k">${e.nextDate.slice(8)}/${e.nextDate.slice(5,7)}</span></span><span class="a">${fh(e.nextTotal)}</span></div>`).join('')+(up.some(e=>!e.conf)?'<div class="leg"><span><i style="background:var(--fc)"></i>Estimado</span></div>':''):'<div class="note">Sin próximos pagos</div>';
 }
 function renderCharts(){
   const Y=S.year,cy=+D.today.slice(0,4),cm=+D.today.slice(5,7)-1,held=D.emp.filter(e=>e.acc>0&&vis(e.t));
