@@ -220,7 +220,7 @@ function readEmp_(ss, tz) {
       divAnual: num_(r[14]) || 0,
       months: r.slice(15, 27).map(x => { const v = num_(x); return isNaN(v) ? 0 : v; }),   // € por acción, ene..dic
       nextDate: date_(r[27], tz), nextDiv: num_(r[28]) || 0, nextTotal: num_(r[29]) || 0,
-      conf: /^(1|s|si|x|true|ok|confirmado|✓|✔)$/.test(norm_(r[31])),   // columna AF opcional: marca el próximo dividendo como confirmado
+      conf: /^(1|s|si|x|true|ok|confirmado|declarado|✓|✔)$/.test(norm_(r[31])),   // columna AF 'Estado próx.': Declarado/Confirmado = confirmado; Estimado (o vacío) = estimado
       logo: CONFIG.LOGOS[t] || logoOf_(r[30])
     });
   });
