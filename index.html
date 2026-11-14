@@ -97,7 +97,8 @@ html,body{overscroll-behavior-y:none}
 .tl{position:absolute;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:hidden;cursor:pointer;border:1px solid var(--bd);text-align:center;line-height:1.15}
 .tl .lg{margin:0}.tg{position:absolute;border:1px solid var(--bd);border-radius:10px}.tgl{position:absolute;left:6px;top:1px;font-size:11px;color:var(--mu);font-weight:600;white-space:nowrap}
 .lg.xl{width:36px;height:36px;font-size:12px}
-.rowp{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px;cursor:pointer}.rowp .nmx{width:112px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rowp .trk{flex:1;background:var(--bd);border-radius:4px;height:14px}.rowp .trk i{display:block;height:14px;border-radius:4px}
+.rowp{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px;cursor:pointer}.rowp .nmx{width:112px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbr{margin:8px 0 12px}.sbh{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:4px}.sbr .trk{display:block;background:var(--bd);border-radius:4px;height:14px;overflow:hidden}.sbr .trk i{display:block;height:14px;border-radius:4px}.sbl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.rowp .trk{flex:1;background:var(--bd);border-radius:4px;height:14px}.rowp .trk i{display:block;height:14px;border-radius:4px}
 #tp td:first-child,#tp th:first-child{position:sticky;left:0;background:var(--card);z-index:1;box-shadow:1px 0 0 var(--bd)}
 .sc{-webkit-overflow-scrolling:touch}
 @media(max-width:760px){main{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.nm{display:none}.kc .n{font-size:16px}.kp4 .n{font-size:13px}.top h1{font-size:18px}th,td{padding:7px 6px}main{padding:12px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom));padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.v{font-size:17px}.big{font-size:22px}.bar .t{width:105px}}
@@ -732,7 +733,7 @@ function cuadreNote(){
 const PG=[['','Sin agrupar'],['sector','Sector'],['pais','País'],['ccy','Divisa'],['broker','Broker']];
 function portItems(){
   const ps=D.positions.filter(p=>p.val>0&&vis(p.t)),tv=ps.reduce((s,p)=>s+p.val,0);
-  return ps.map(p=>{const e=EMP[p.t]||{};return{t:p.t,name:e.name||'',v:p.val,w:tv?p.val/tv:0,cost:p.cost,pyg:p.pyg,pygp:p.cost?p.pyg/p.cost:NaN,sector:p.sector||'Otros',pais:e.pais||'Otros',ccy:p.ccy||'Otros',broker:brokerOf(p.t)||'Otros'}}).sort((a,b)=>b.v-a.v);
+  return ps.map(p=>{const e=EMP[p.t]||{};return{t:p.t,name:e.name||'',v:p.val,w:tv?p.val/tv:0,cost:p.cost,pyg:p.pyg,pygp:p.cost?p.pyg/p.cost:NaN,sector:p.sector||'Otros',sub:p.sub||'Otros',pais:e.pais||'Otros',ccy:p.ccy||'Otros',broker:brokerOf(p.t)||'Otros'}}).sort((a,b)=>b.v-a.v);
 }
 function groupsOf(items){
   if(!S.pg)return[{label:'',v:items.reduce((s,i)=>s+i.v,0),items}];
@@ -801,6 +802,11 @@ function vRen(items,tot){
    +gs.map(g=>(S.pg?`<h2 style="margin:12px 0 4px">${g.label}</h2>`:'')+g.items.map(row).join('')).join('');
   bindTip('#ptv','[data-hi]',el=>{const i=items.find(x=>x.t===el.dataset.hi);return `<b>${i.t}</b><br>Coste ${fm(i.cost||0,0)} €<br>Revalorización ${fm(i.rev,0)} €<br>Dividendos ${fm(i.dv,0)} €<br>Total ${fm(i.tr,0)} € (${pc(i.trp)})`});
 }
+function vSec(items,tot){   // sector → subsector (barra proporcional al peso) → empresas (logos, de mayor a menor peso)
+  const by=(arr,k)=>{const m={};arr.forEach(i=>(m[i[k]]=m[i[k]]||[]).push(i));return Object.entries(m).map(([label,it])=>({label,v:it.reduce((a,i)=>a+i.v,0),items:it})).sort((a,b)=>b.v-a.v)};
+  const secs=by(items,'sector').map(g=>({...g,subs:by(g.items,'sub')})),mx=Math.max(...secs.flatMap(g=>g.subs.map(x=>x.v)));
+  $('#ptv').innerHTML=secs.map((g,k)=>`<h2 style="margin:12px 0 4px">${g.label} <span class="k">· ${fm(g.v/tot*100,1)} % · ${fh(g.v,0)} €</span></h2>`+g.subs.map(x=>`<div class="sbr"><div class="sbh"><span>${x.label}</span><span><b>${fm(x.v/tot*100,1)} %</b> <span class="k">${fh(x.v,0)} €</span></span></div><span class="trk"><i style="width:${x.v/mx*100}%;background:${PAL[k%PAL.length]}"></i></span><div class="sbl">${x.items.map(i=>`<span data-pos="${i.t}" style="display:inline-flex;cursor:pointer">${logo(i.t,'',28)}</span>`).join('')}</div></div>`).join('')).join('');
+}
 function vAni(items,tot){
   let sl;
   if(S.pg)sl=groupsOf(items).map(g=>({label:g.label,v:g.v}));
@@ -815,11 +821,11 @@ function renderPort(){
   if(!D)return;
   const items=portItems(),tot=items.reduce((s,i)=>s+i.v,0);
   const chips=(arr,key)=>arr.map(([k,l])=>`<button data-pp="${key}|${k}" class="${S[key]===k?'on':''}">${l}</button>`).join('');
-  $('#ptc').innerHTML=`<div class="fg fgl"><span class="k">Estilo</span><div class="fs">${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo']],'pv')}</div></div>
-   <div class="fg fgl"><span class="k">Agrupar</span><div class="fs">${chips(PG,'pg')}</div></div>${S.pv==='mos'?`<div class="fg fgl"><span class="k">Color</span><div class="fs">${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div></div>`:''}
+  $('#ptc').innerHTML=`<div class="fg fgl"><span class="k">Estilo</span><div class="fs">${chips([['mos','Mosaico'],['tar','Tarjetas'],['bar','Barras'],['ren','Rendimiento'],['ani','Anillo'],['sec','Sectores']],'pv')}</div></div>
+   ${S.pv==='sec'?'':`<div class="fg fgl"><span class="k">Agrupar</span><div class="fs">${chips(PG,'pg')}</div></div>`}${S.pv==='mos'?`<div class="fg fgl"><span class="k">Color</span><div class="fs">${chips([['n','Neutro'],['r','Rentabilidad']],'pc')}</div></div>`:''}
    <div id="ptv"></div>`;
   document.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>{const [k,v]=b.dataset.pp.split('|');S[k]=v;renderPort()});
-  ({mos:vMos,tar:vTar,bar:vBar,ren:vRen,ani:vAni})[S.pv](items,tot);
+  ({mos:vMos,tar:vTar,bar:vBar,ren:vRen,ani:vAni,sec:vSec})[S.pv](items,tot);
   document.querySelectorAll('#ptv [data-pos]').forEach(r=>r.onclick=()=>openDetail(r.dataset.pos));
   const PIM={};items.forEach(i=>PIM[i.t]=i);
   bindTip('#ptv','[data-pos]',el=>{const i=PIM[el.dataset.pos];if(i&&S.pv==='ren')return `<b>${i.t}</b> <span class="k">${i.name||''}</span><br>Revalorización: <span class="${cl(i.rev)}">${HIDE?'':fm(i.rev,0)+' € · '}${pc(i.cost>0?i.rev/i.cost:NaN)}</span><br>Dividendos: ${HIDE?'':fm(i.dv,0)+' € · '}${pc(i.cost>0?i.dv/i.cost:NaN)}<br>Total: <b class="${cl(i.tr)}">${HIDE?'':fm(i.tr,0)+' € · '}${pc(i.trp)}</b>`;return i?`<div style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>${i.t}</b> <span class="k">${i.name||''}</span></div>${fm(i.w*100,1)} % de la cartera${HIDE?'':' · '+fm(i.v,0)+' €'}<br><span class="${cl(i.pygp)}">${pc(i.pygp)}</span> <span class="k">s/ coste</span>`:''});
