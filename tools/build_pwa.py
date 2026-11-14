@@ -52,7 +52,7 @@ s=rep(s,'<html lang="es"><head><base target="_top"><meta charset="utf-8">\n<meta
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#111418">
 <meta name="robots" content="noindex,nofollow">''')
-s=rep(s,'<span id="lgi">📈</span>','<span id="lgi"><img src="apple-touch-icon.png" alt="" style="width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:0;display:block"></span>')
+s=rep(s,"<h1>📈 Cartera</h1>","<h1><img src=\"apple-touch-icon.png\" alt=\"\" style=\"width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:8px\">Cartera</h1>")
 s=rep(s,"main{max-width:1040px;margin:0 auto;padding:16px}","main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}\n.ov{padding-top:calc(16px + env(safe-area-inset-top))}\ninput.q{font-size:16px}")
 s=rep(s,"main{padding:12px}","main{padding:12px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom));padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}")
 s=rep(s,"@media(max-width:760px){.nm{display:none}","@media(max-width:760px){main{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.nm{display:none}")
