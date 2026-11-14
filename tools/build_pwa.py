@@ -52,14 +52,14 @@ s=rep(s,'<html lang="es"><head><base target="_top"><meta charset="utf-8">\n<meta
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#111418">
 <meta name="robots" content="noindex,nofollow">''')
-s=rep(s,"<h1>📈 Cartera</h1>","<h1><img src=\"apple-touch-icon.png\" alt=\"\" style=\"width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:8px\">Cartera</h1>")
+s=rep(s,"<h1>📈 Cartera<span","<h1><img src=\"apple-touch-icon.png\" alt=\"\" style=\"width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:8px\">Cartera<span")
 s=rep(s,"main{max-width:1040px;margin:0 auto;padding:16px}","main{max-width:1040px;margin:0 auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}\n.ov{padding-top:calc(16px + env(safe-area-inset-top))}\ninput.q{font-size:16px}")
 s=rep(s,"main{padding:12px}","main{padding:12px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom));padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}")
 s=rep(s,"@media(max-width:760px){.nm{display:none}","@media(max-width:760px){main{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.nm{display:none}")
 # pantalla de conexión
 s=rep(s,'<div id="msg" class="card">','<div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>\n<div id="msg" class="card">')
 # el botón de actualizar se oculta en la PWA (se refresca deslizando); el elemento sigue existiendo para el pull-to-refresh
-s=rep(s,'#lb{position:fixed','#rf{display:none}\n#lb{position:fixed')
+s=rep(s,'#lb{display:none}','#rf{display:none}\n#lb{display:none}')
 # shim de google.script.run -> fetch
 shim=r'''
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
