@@ -39,6 +39,8 @@ function doGet(e) {
     if (!key || p.k !== key) return out_({ error: 'No autorizado' });
     try {
       if (p.a === 'loadAll') return out_(loadAll(p.s === '1'));
+      if (p.a === 'loadQuick') return out_(loadQuick(p.s === '1'));
+      if (p.a === 'loadRest') return out_(loadRest());
       if (p.a === 'loadLogos') return out_(loadLogos(+p.s || 0));
       if (p.a === 'loadTvLogos') return out_(loadTvLogos());
       if (p.a === 'loadBench') return out_(loadBench());
@@ -505,6 +507,38 @@ function loadAll(fresh) {
   return JSON.stringify(res);
 }
 
+
+/* Carga en dos tiempos: loadQuick (lo necesario para Cartera/Composición/Dividendos) y loadRest (rentabilidad e histórico).
+   loadAll sigue existiendo y devuelve todo junto (la app antigua / marcha atrás). */
+function loadQuick(fresh) {
+  const t0 = Date.now(), T = { ms: {} }, lap = (k, t) => { T.ms[k] = Date.now() - t; return Date.now(); };
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), tz = ss.getSpreadsheetTimeZone();
+  let t = lap('abrir', t0);
+  const st = readStatic_(ss, tz, !!fresh, T); t = lap('fija', t);
+  const car = readCartera_(ss); t = lap('cartera', t);
+  const emp = readEmp_(ss, tz); t = lap('emp', t);
+  T.total = Date.now() - t0;
+  console.log('loadQuick ' + (T.total / 1000).toFixed(1) + ' s · caché ' + T.cache + '\n' + Object.keys(T.ms).map(k => k + ' ' + T.ms[k] + ' ms').join(' · '));
+  return JSON.stringify({
+    positions: car.positions, totals: car.totals,
+    lots: st.lots, movs: st.movs, opc: st.opc, skipped: st.skipped, tipos: st.tipos,
+    divs: st.divs, emp, syms: st.syms,
+    today: Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd'),
+    divNeto: CONFIG.DIV_RESTA_DESTINO ? 'bruto − ret. origen − ret. destino − comisión' : 'bruto − ret. origen − comisión'
+  });
+}
+function loadRest() {
+  const t0 = Date.now(), T = { ms: {} }, lap = (k, t) => { T.ms[k] = Date.now() - t; return Date.now(); };
+  const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID), tz = ss.getSpreadsheetTimeZone();
+  let t = lap('abrir', t0);
+  const st = readStatic_(ss, tz, false, T); t = lap('fija', t);
+  const emp = readEmp_(ss, tz); t = lap('emp', t);
+  const rend = readRend_(ss, tz); t = lap('rend', t);
+  const hist = readHist_(st.lots, emp, tz, ss); t = lap('hist', t);
+  T.total = Date.now() - t0;
+  console.log('loadRest ' + (T.total / 1000).toFixed(1) + ' s · caché ' + T.cache + '\n' + Object.keys(T.ms).map(k => k + ' ' + T.ms[k] + ' ms').join(' · '));
+  return JSON.stringify({ rend, hist });
+}
 
 /* Comparativa con índices (rentabilidad total): ETFs acumulativos/precio ajustado por dividendos de Yahoo Finance, cierres semanales (diarios el último año largo) */
 const BENCH_ = [

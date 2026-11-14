@@ -86,21 +86,22 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
   return async(...args)=>{
     let served=false;
     try{
-      if(name==='loadAll'&&!window.__PTR){const c=await idb.get('data');if(c){served=true;window.__CACHED=true;try{ok&&ok(c)}finally{window.__CACHED=false}}}
+      if((name==='loadAll'||name==='loadQuick')&&!window.__PTR){const c=await idb.get('data');if(c){served=true;window.__CACHED=true;try{ok&&ok(c)}finally{window.__CACHED=false}}}
       if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       if(name==='loadTvLogos'){const c=await idb.get('tv');if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       const t=await apiCall(name,args);
       let o=null;try{o=JSON.parse(t)}catch(e){}
       if(o&&o.error&&name!=='loadLogos'&&name!=='loadTvLogos')throw new Error(o.error);
-      if(name==='loadAll')idb.set('data',t);
+      if(name==='loadAll')idb.set('data',t);   // con loadQuick/loadRest se guarda el conjunto fusionado (window.__SAVE)
       if(name==='loadLogos'&&o&&!o.error)idb.set('lg'+(args[0]||0),{t:Date.now(),v:t});
       if(name==='loadTvLogos'&&o&&!o.error&&o.pending===0)idb.set('tv',{t:Date.now(),v:t});
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
-      if(name==='loadAll'&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
+      if((name==='loadAll'||name==='loadQuick')&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
       if(!served)ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
     }
   }}})}
+window.__SAVE=t=>idb.set('data',t);
 window.google={script:{run:mkRun(null,null)}};
 function showCfg(msg){
   $('#msg').classList.add('hide');$('#app').classList.add('hide');$('#cfgscr').classList.remove('hide');

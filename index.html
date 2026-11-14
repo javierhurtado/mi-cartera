@@ -111,8 +111,13 @@ html,body{overscroll-behavior-y:none}
 svg text{font-family:inherit}
 .leg{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--mu);margin-top:4px}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
+#lb{height:3px;margin:-6px 0 10px;overflow:hidden;border-radius:3px;opacity:0;transition:opacity .3s;pointer-events:none}#lb.on{opacity:1}
+#lb i{display:block;height:3px;width:38%;border-radius:3px;background:linear-gradient(90deg,transparent,var(--ac),transparent);animation:lbm 1.15s ease-in-out infinite}
+@keyframes lbm{0%{transform:translateX(-100%)}100%{transform:translateX(270%)}}
+.rpn{display:none}body.rp #rent>.rpn,body.rp #gr>.rpn{display:block}body.rp #rent>:not(.rpn),body.rp #gr>:not(.rpn){display:none}
 </style></head><body><main>
 <div class="top"><h1><img src="apple-touch-icon.png" alt="" style="width:30px;height:30px;border-radius:7px;vertical-align:-7px;margin-right:8px">Cartera</h1><div class="row"><button id="rf" class="ib" title="Actualizar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></button><button id="eye" class="ib" title="Ocultar importes"></button><button id="thm" class="ib" title="Tema claro/oscuro"></button><button id="cfg" class="ib" title="Ajustes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
+<div id="lb"><i></i></div>
 <div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>
 <div id="msg" class="card">Cargando datos de tu hoja…</div>
 <div id="app" class="hide">
@@ -122,7 +127,7 @@ svg text{font-family:inherit}
 
 <section id="pt" class="hide"><div class="card" id="ptc"></div></section>
 
-<section id="rent" class="hide">
+<section id="rent" class="hide"><div class="card rpn">Cargando rentabilidad e histórico de precios…</div>
  <div class="chips" id="per"></div>
  <div class="card" style="position:relative"><button id="rinfo" class="inf" aria-label="Información" style="position:absolute;top:10px;right:10px;margin:0">i</button><div class="grid" id="kr"></div></div>
  <div class="card"><h2>TWR acumulado</h2><div id="bmc" class="fg"></div><div id="bmn" class="note hide"></div><div id="ch1" class="sc"></div></div>
@@ -138,7 +143,7 @@ svg text{font-family:inherit}
  <div class="card"><h2>Próximos pagos</h2><div id="up"></div></div>
 </section>
 
-<section id="gr" class="hide"><div class="chips" id="yrs2"></div><div class="g2" id="grs"></div></section>
+<section id="gr" class="hide"><div class="card rpn">Cargando rentabilidad e histórico de precios…</div><div class="chips" id="yrs2"></div><div class="g2" id="grs"></div></section>
 </div>
 <div id="xv" class="hide ov"><div class="card dc"><div class="dh"><b id="xt" style="font-size:16px"></b><button id="xx">✕ Cerrar</button></div><div id="xc" style="margin-top:12px"></div></div></div>
 <div id="dt" class="hide ov"><div class="card dc" id="dtc"></div></div>
@@ -173,21 +178,22 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
   return async(...args)=>{
     let served=false;
     try{
-      if(name==='loadAll'&&!window.__PTR){const c=await idb.get('data');if(c){served=true;window.__CACHED=true;try{ok&&ok(c)}finally{window.__CACHED=false}}}
+      if((name==='loadAll'||name==='loadQuick')&&!window.__PTR){const c=await idb.get('data');if(c){served=true;window.__CACHED=true;try{ok&&ok(c)}finally{window.__CACHED=false}}}
       if(name==='loadLogos'){const c=await idb.get('lg'+(args[0]||0));if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       if(name==='loadTvLogos'){const c=await idb.get('tv');if(c&&Date.now()-c.t<6048e5){ok&&ok(c.v);return}}
       const t=await apiCall(name,args);
       let o=null;try{o=JSON.parse(t)}catch(e){}
       if(o&&o.error&&name!=='loadLogos'&&name!=='loadTvLogos')throw new Error(o.error);
-      if(name==='loadAll')idb.set('data',t);
+      if(name==='loadAll')idb.set('data',t);   // con loadQuick/loadRest se guarda el conjunto fusionado (window.__SAVE)
       if(name==='loadLogos'&&o&&!o.error)idb.set('lg'+(args[0]||0),{t:Date.now(),v:t});
       if(name==='loadTvLogos'&&o&&!o.error&&o.pending===0)idb.set('tv',{t:Date.now(),v:t});
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
-      if(name==='loadAll'&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
+      if((name==='loadAll'||name==='loadQuick')&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
       if(!served)ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
     }
   }}})}
+window.__SAVE=t=>idb.set('data',t);
 window.google={script:{run:mkRun(null,null)}};
 function showCfg(msg){
   $('#msg').classList.add('hide');$('#app').classList.add('hide');$('#cfgscr').classList.remove('hide');
@@ -245,13 +251,13 @@ function fetchTv(){
 
 /* ---------- carga ---------- */
 let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
-function updTxt(busy){const e=$('#upd');if(!e)return;try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…';return}
+function updTxt(busy){const e=$('#upd');if(!e)return;const lb=$('#lb');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…';return}
   if(!LASTUPD){e.textContent='';return}
   const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
   e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
 {const iv=setInterval(()=>{if(!$('#upd').dataset.b)updTxt(false)},60000);if(iv&&iv.unref)iv.unref()}
 var LOADMS=0,TIMING='';
-function load(done){
+function loadFull(done){   // carga completa en una sola llamada (modo anterior)
   const T0=Date.now();window.__SPIN=!!done&&typeof done!=='function';$('#upd').dataset.b='1';updTxt(true);
   if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
   const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
@@ -271,6 +277,46 @@ function load(done){
       if(done)done();
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>fail('Error: '+(e.message||e))).loadAll(done?1:0);
+}
+/* Carga en dos tiempos: primero lo necesario para Cartera (loadQuick) y, en paralelo, la rentabilidad/histórico (loadRest).
+   SPLIT=false vuelve a la carga completa de siempre (loadAll). */
+const SPLIT=true;let RESTPEND=false;
+function load(done){
+  if(!SPLIT)return loadFull(done);
+  window.__SPIN=!!done&&typeof done!=='function';$('#upd').dataset.b='1';updTxt(true);
+  if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
+  const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
+  let legacy=false,restOk=false,restBack=false;
+  const end=()=>{$('#upd').dataset.b='';updTxt(false);if(done)done()};
+  const fail=m=>{clearTimeout(slow);$('#upd').dataset.b='';updTxt(false);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
+  const showApp=()=>{$('#msg').classList.add('hide');$('#app').classList.remove('hide')};
+  const rest=()=>{
+    google.script.run.withSuccessHandler(rr=>{
+      try{
+        const x=typeof rr==='string'?JSON.parse(rr):rr;if(!x||x.error)throw new Error((x&&x.error)||'sin datos');
+        D.rend=x.rend||[];D.hist=x.hist||null;RESTPEND=false;document.body.classList.remove('rp');
+        buildSeries();renderAll();window.__SAVE&&window.__SAVE(JSON.stringify(D));end()
+      }catch(e){RESTPEND=false;document.body.classList.remove('rp');renderAll();end();$('#smeta')&&($('#smeta').textContent='histórico: '+(e&&e.message||e))}})
+    .withFailureHandler(e=>{RESTPEND=false;document.body.classList.remove('rp');if(D)renderAll();end()}).loadRest()};
+  google.script.run.withSuccessHandler(r=>{
+    clearTimeout(slow);
+    try{
+      if(!r)throw new Error('El servidor no devolvió datos.');
+      const q=typeof r==='string'?JSON.parse(r):r;
+      if(window.__CACHED){   // copia guardada (completa): se pinta ya, mientras llega lo nuevo
+        D=q;EMP={};D.emp.forEach(e=>EMP[e.t]=e);showApp();META=D.lots.length+' lotes · '+D.divs.length+' div.';updMeta();buildSeries();renderAll();
+        if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}return}
+      if(D&&D.hist!==undefined&&D.rend){Object.assign(D,q)}else{D=q;D.rend=[];D.hist=null;RESTPEND=true;document.body.classList.add('rp')}
+      EMP={};D.emp.forEach(e=>EMP[e.t]=e);showApp();
+      LASTUPD=Date.now();try{localStorage.setItem('mc_upd',String(LASTUPD))}catch(e){}
+      META=D.lots.length+' lotes · '+D.divs.length+' div.';updMeta();
+      buildSeries();renderAll();
+      if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
+      rest();
+    }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
+  .withFailureHandler(e=>{const m=String(e&&e.message||e);
+    if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
+    fail('Error: '+m)}).loadQuick(done?1:0);
 }
 function buildHist(){
   $('#xc').innerHTML='<b>Construyendo histórico de precios…</b><div class="note">Puede tardar de 1 a 2 minutos la primera vez (GOOGLEFINANCE calcula en tu hoja).</div>';
@@ -840,7 +886,7 @@ function keepFS(root,fn){const q=()=>[...document.querySelectorAll(root+' .fs')]
   q().forEach((e,i)=>{if(old[i]!=null)e.scrollLeft=old[i];const on=e.querySelector('button.on'),c=e.getBoundingClientRect();if(!on||!c.width)return;const r=on.getBoundingClientRect();
     if(r.right>c.right)e.scrollLeft+=r.right-c.right+8;else if(r.left<c.left)e.scrollLeft-=c.left-r.left+8})}
 {const rp=renderPos,rt=renderPort;renderPos=function(){keepFS('#pf',()=>rp())};renderPort=function(){keepFS('#ptc',()=>rt())}}
-function renderAll(){renderPos();renderRent();renderDiv();renderCharts();if(!$('#pt').classList.contains('hide'))renderPort()}
+function renderAll(){renderPos();if(!RESTPEND)renderRent();renderDiv();if(!RESTPEND)renderCharts();if(!$('#pt').classList.contains('hide'))renderPort()}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));['pos','pt','rent','dv','gr'].forEach(id=>$('#'+id).classList.toggle('hide',id!==b.dataset.t));if(b.dataset.t==='pt')renderPort();centerYears()});
 const eyeSvg=off=>off?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 function paintEye(){const b=$('#eye');b.innerHTML=eyeSvg(HIDE);b.classList.toggle('on',HIDE);b.title=HIDE?'Mostrar importes':'Ocultar importes'}
