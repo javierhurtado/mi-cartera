@@ -58,6 +58,8 @@ s=rep(s,"main{padding:12px}","main{padding:12px;padding-top:calc(12px + env(safe
 s=rep(s,"@media(max-width:760px){.nm{display:none}","@media(max-width:760px){main{padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}.nm{display:none}")
 # pantalla de conexión
 s=rep(s,'<div id="msg" class="card">','<div id="cfgscr" class="card hide"><h2>Conexión con tu hoja</h2><div class="note" style="margin:0 0 10px">Pega la URL de la implementación web de Apps Script (termina en /exec) y la clave de acceso. Solo se guardan en este dispositivo.</div><input class="q" id="cu" placeholder="URL de Apps Script (…/exec)" style="width:100%;margin-bottom:8px"><input class="q" id="ck" placeholder="Clave" style="width:100%;margin-bottom:10px"><div class="row"><button id="cs" class="on">Guardar y cargar</button><button id="cc">Borrar caché</button></div><div id="ce" class="err" style="margin-top:8px"></div></div>\n<div id="msg" class="card">')
+# el botón de actualizar se oculta en la PWA (se refresca deslizando); el elemento sigue existiendo para el pull-to-refresh
+s=rep(s,'#lb{height:3px','#rf{display:none}\n#lb{height:3px')
 # shim de google.script.run -> fetch
 shim=r'''
 /* ---------- Conexión: sustituye a google.script.run por llamadas HTTP al Apps Script ---------- */
