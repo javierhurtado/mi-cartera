@@ -193,7 +193,7 @@ let LT0=0,LTM=0,LSEC='';
 function updTxt(busy){const e=$('#upd');if(!e)return;if(!busy){STG='';if(LTM){clearInterval(LTM);LTM=0;LSEC=((Date.now()-LT0)/1000).toFixed(1).replace('.',',')+' s'}}else if(!LTM){LT0=Date.now();LSEC='';LTM=setInterval(()=>updTxt(true),250)}const lb=$('#dts');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.innerHTML='<i class="ur"></i>Actualizando · '+Math.floor((Date.now()-LT0)/1000)+' s';return}
   if(!LASTUPD){e.textContent='';return}
   const m=Math.floor((Date.now()-LASTUPD)/6e4),d=new Date(LASTUPD),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),n=new Date(),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
-  e.textContent='Actualizado '+(m<1?'hace unos segundos':m<60?'hace '+m+' min':df===0?'hace '+Math.floor(m/60)+' h':df===1?'ayer · '+hm:p(d.getDate())+'/'+p(d.getMonth()+1)+' · '+hm)}
+  e.textContent='Actualizado '+(m<1?'hace unos segundos':m<60?'hace '+m+' min':df===0?'hace '+Math.floor(m/60)+' h':df===1?'ayer • '+hm+'h':p(d.getDate())+'-'+['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]+' • '+hm+'h')}
 {const iv=setInterval(()=>{if(!$('#upd').dataset.b)updTxt(false)},60000);if(iv&&iv.unref)iv.unref()}
 var LOADMS=0,TIMING='';
 function loadFull(done){   // carga completa en una sola llamada (modo anterior)
