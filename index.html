@@ -253,7 +253,8 @@ function fetchTv(){
 
 /* ---------- carga ---------- */
 let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
-function updTxt(busy){const e=$('#upd');if(!e)return;const lb=$('#dts');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…';return}
+let STG='';function setStg(t){STG=t;const u=$('#upd');if(u&&u.dataset.b==='1')updTxt(true)}
+function updTxt(busy){const e=$('#upd');if(!e)return;if(!busy)STG='';const lb=$('#dts');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…'+(STG?' '+STG:'');return}
   if(!LASTUPD){e.textContent='';return}
   const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
   e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
@@ -285,11 +286,11 @@ function loadFull(done){   // carga completa en una sola llamada (modo anterior)
 const SPLIT=true;let RESTPEND=false;
 function load(done){
   if(!SPLIT)return loadFull(done);
-  window.__SPIN=!!done&&typeof done!=='function';$('#upd').dataset.b='1';updTxt(true);
+  window.__SPIN=!!done&&typeof done!=='function';$('#upd').dataset.b='1';STG='cartera · 1/2';updTxt(true);
   if(!(done&&D!==null)){$('#msg').classList.remove('hide');$('#msg').textContent='Cargando datos de tu hoja…'}
   const slow=setTimeout(()=>{if(D===null)$('#msg').innerHTML='Cargando datos de tu hoja… <span class="k">(tarda más de lo normal; si no termina, abre Apps Script → Ejecuciones y mira el último error)</span>'},40000);
   let legacy=false,restOk=false,restBack=false;
-  const end=()=>{$('#upd').dataset.b='';updTxt(false);if(done)done()};
+  const end=()=>{STG='';$('#upd').dataset.b='';updTxt(false);if(done)done()};
   const fail=m=>{clearTimeout(slow);$('#upd').dataset.b='';updTxt(false);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
   const showApp=()=>{$('#msg').classList.add('hide');$('#app').classList.remove('hide')};
   const rest=()=>{
@@ -314,10 +315,10 @@ function load(done){
       META=D.lots.length+' lotes · '+D.divs.length+' div.';updMeta();
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
-      rest();
+      setStg('rentabilidad · 2/2');rest();
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>{const m=String(e&&e.message||e);
-    if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
+    if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);STG='';loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
     if(D!==null){clearTimeout(slow);end();const sm=$('#smeta')||$('#meta');if(sm)sm.textContent='sin conexión · datos guardados';return}   // hay datos en pantalla: no se tapan con un error
     fail('Error: '+m)}).loadQuick(done?1:0);
 }
