@@ -219,6 +219,8 @@ function loadFull(done){   // carga completa en una sola llamada (modo anterior)
 }
 /* Carga en dos tiempos: primero lo necesario para Cartera (loadQuick) y, en paralelo, la rentabilidad/histórico (loadRest).
    SPLIT=false vuelve a la carga completa de siempre (loadAll). */
+/* Llama a una función del servidor; si no existe (Code_v3.gs sin actualizar) o falla al lanzarse, avisa por ko en vez de quedarse colgada. */
+function srv(name,arg,ok,ko){try{const b=google.script.run.withSuccessHandler(ok).withFailureHandler(ko);if(typeof b[name]!=='function'){ko(new Error('Acción desconocida: '+name));return}arg===undefined?b[name]():b[name](arg)}catch(e){ko(e)}}
 const SPLIT=true;let RESTPEND=false;
 function load(done){
   if(!SPLIT)return loadFull(done);
@@ -230,14 +232,14 @@ function load(done){
   const fail=m=>{clearTimeout(slow);$('#upd').dataset.b='';updTxt(false);if(done)done();$('#msg').classList.remove('hide');$('#msg').innerHTML='<span class="err">'+m+'</span>'};
   const showApp=()=>{$('#msg').classList.add('hide');$('#app').classList.remove('hide')};
   const rest=()=>{
-    google.script.run.withSuccessHandler(rr=>{
+    srv('loadRest',undefined,rr=>{
       try{
         const x=typeof rr==='string'?JSON.parse(rr):rr;if(!x||x.error)throw new Error((x&&x.error)||'sin datos');
         D.rend=x.rend||[];D.hist=x.hist||null;RESTPEND=false;document.body.classList.remove('rp');
         buildSeries();renderAll();window.__SAVE&&window.__SAVE(JSON.stringify(D));end()
-      }catch(e){RESTPEND=false;document.body.classList.remove('rp');renderAll();end();$('#smeta')&&($('#smeta').textContent='histórico: '+(e&&e.message||e))}})
-    .withFailureHandler(e=>{RESTPEND=false;document.body.classList.remove('rp');if(D)renderAll();end()}).loadRest()};
-  google.script.run.withSuccessHandler(r=>{
+      }catch(e){RESTPEND=false;document.body.classList.remove('rp');renderAll();end();$('#smeta')&&($('#smeta').textContent='histórico: '+(e&&e.message||e))}},
+    e=>{RESTPEND=false;document.body.classList.remove('rp');if(D)renderAll();end()})};
+  srv('loadQuick',done?1:0,r=>{
     clearTimeout(slow);
     try{
       if(!r)throw new Error('El servidor no devolvió datos.');
@@ -252,11 +254,11 @@ function load(done){
       buildSeries();renderAll();
       if(!LGSTART){LGSTART=true;fetchTv();fetchLogos(0)}
       setStg('2/2');rest();
-    }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
-  .withFailureHandler(e=>{const m=String(e&&e.message||e);
+    }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}},
+  e=>{const m=String(e&&e.message||e);
     if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);STG='';loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
     if(D!==null){clearTimeout(slow);end();const sm=$('#smeta')||$('#meta');if(sm)sm.textContent='sin conexión · datos guardados';return}   // hay datos en pantalla: no se tapan con un error
-    fail('Error: '+m)}).loadQuick(done?1:0);
+    fail('Error: '+m)});
 }
 function buildHist(){
   $('#xc').innerHTML='<b>Construyendo histórico de precios…</b><div class="note">Puede tardar de 1 a 2 minutos la primera vez (GOOGLEFINANCE calcula en tu hoja).</div>';
