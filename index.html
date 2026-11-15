@@ -192,7 +192,7 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
       if((name==='loadAll'||name==='loadQuick')&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
-      if(!served)ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
+      if(!served||name==='loadQuick')ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
     }
   }}})}
 window.__SAVE=t=>idb.set('data',t);
@@ -318,6 +318,7 @@ function load(done){
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>{const m=String(e&&e.message||e);
     if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
+    if(D!==null){clearTimeout(slow);end();const sm=$('#smeta')||$('#meta');if(sm)sm.textContent='sin conexión · datos guardados';return}   // hay datos en pantalla: no se tapan con un error
     fail('Error: '+m)}).loadQuick(done?1:0);
 }
 function buildHist(){

@@ -252,6 +252,7 @@ function load(done){
     }catch(e){fail('Error al procesar los datos: '+(e&&e.message||e))}})
   .withFailureHandler(e=>{const m=String(e&&e.message||e);
     if(/loadQuick|Acción desconocida/.test(m)){clearTimeout(slow);loadFull(done);return}   // servidor sin actualizar: carga completa de siempre
+    if(D!==null){clearTimeout(slow);end();const sm=$('#smeta')||$('#meta');if(sm)sm.textContent='sin conexión · datos guardados';return}   // hay datos en pantalla: no se tapan con un error
     fail('Error: '+m)}).loadQuick(done?1:0);
 }
 function buildHist(){

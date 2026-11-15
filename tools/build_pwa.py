@@ -100,7 +100,7 @@ function mkRun(ok,ko){return new Proxy({},{get:(_,name)=>{
       ok&&ok(name==='buildHistory'?o:t);
     }catch(e){
       if((name==='loadAll'||name==='loadQuick')&&/No autorizado/.test(String(e&&e.message))){showCfg(String(e.message));return}
-      if(!served)ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
+      if(!served||name==='loadQuick')ko&&ko(e);else {const m=document.getElementById('smeta')||document.getElementById('meta');if(m)m.textContent='sin conexión · datos guardados'}
     }
   }}})}
 window.__SAVE=t=>idb.set('data',t);
