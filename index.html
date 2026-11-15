@@ -113,6 +113,7 @@ svg text{font-family:inherit}
 .leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px}
 #rf{display:none}
 #lb{display:none}
+#upd .ur{display:inline-block;width:9px;height:9px;border:1.6px solid var(--bd);border-top-color:var(--ac);border-radius:50%;margin-right:6px;vertical-align:-1px;animation:urs .8s linear infinite}@keyframes urs{to{transform:rotate(360deg)}}#upd{font-variant-numeric:tabular-nums}
 #dts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 6px);display:flex;justify-content:center;gap:3px;opacity:0;pointer-events:none;transition:opacity .35s;z-index:50}#dts.on{opacity:1}
 #dts i{display:block;width:3px;height:3px;border-radius:50%;background:var(--mu);opacity:.2;animation:dtp 1.4s ease-in-out infinite}#dts i:nth-child(2){animation-delay:.2s}#dts i:nth-child(3){animation-delay:.4s}
 @keyframes dtp{0%,70%,100%{opacity:.2}35%{opacity:.85}}
@@ -255,10 +256,10 @@ function fetchTv(){
 let LASTUPD=0;try{LASTUPD=+localStorage.getItem('mc_upd')||0}catch(e){}
 let STG='';function setStg(t){STG=t;const u=$('#upd');if(u&&u.dataset.b==='1')updTxt(true)}
 let LT0=0,LTM=0,LSEC='';
-function updTxt(busy){const e=$('#upd');if(!e)return;if(!busy){STG='';if(LTM){clearInterval(LTM);LTM=0;LSEC=((Date.now()-LT0)/1000).toFixed(1).replace('.',',')+' s'}}else if(!LTM){LT0=Date.now();LSEC='';LTM=setInterval(()=>updTxt(true),250)}const lb=$('#dts');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.textContent='Actualizando…'+(STG?' '+STG:'')+' · '+Math.floor((Date.now()-LT0)/1000)+' s';return}
+function updTxt(busy){const e=$('#upd');if(!e)return;if(!busy){STG='';if(LTM){clearInterval(LTM);LTM=0;LSEC=((Date.now()-LT0)/1000).toFixed(1).replace('.',',')+' s'}}else if(!LTM){LT0=Date.now();LSEC='';LTM=setInterval(()=>updTxt(true),250)}const lb=$('#dts');if(lb)lb.classList.toggle('on',!!busy);try{const sv=$('#rf')&&$('#rf').querySelector('svg');if(sv)sv.classList.toggle('rot',!!busy&&!!window.__SPIN&&!window.__PTR)}catch(x){}if(busy){e.innerHTML='<i class="ur"></i>Actualizando · '+Math.floor((Date.now()-LT0)/1000)+' s';return}
   if(!LASTUPD){e.textContent='';return}
-  const d=new Date(LASTUPD),n=new Date(),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
-  e.textContent='Actualizado '+(df===0?'hoy':df===1?'ayer':p(d.getDate())+'/'+p(d.getMonth()+1))+' · '+hm}
+  const m=Math.floor((Date.now()-LASTUPD)/6e4),d=new Date(LASTUPD),p=v=>('0'+v).slice(-2),hm=p(d.getHours())+':'+p(d.getMinutes()),n=new Date(),day=x=>new Date(x.getFullYear(),x.getMonth(),x.getDate()).getTime(),df=Math.round((day(n)-day(d))/864e5);
+  e.textContent='Actualizado '+(m<1?'hace unos segundos':m<60?'hace '+m+' min':df===0?'hace '+Math.floor(m/60)+' h':df===1?'ayer · '+hm:p(d.getDate())+'/'+p(d.getMonth()+1)+' · '+hm)}
 {const iv=setInterval(()=>{if(!$('#upd').dataset.b)updTxt(false)},60000);if(iv&&iv.unref)iv.unref()}
 var LOADMS=0,TIMING='';
 function loadFull(done){   // carga completa en una sola llamada (modo anterior)
